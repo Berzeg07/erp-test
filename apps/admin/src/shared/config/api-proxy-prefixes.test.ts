@@ -18,4 +18,8 @@ describe('admin API proxy prefixes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/imports')
     expect(WEB_API_PROXY_PREFIXES).toContain('/mock-source')
   })
+
+  it('proxies case routes', () => {
+    expect(WEB_API_PROXY_PREFIXES).toContain('/cases')
+  })
 })

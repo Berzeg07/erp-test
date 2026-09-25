@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import type { ImportResult, RawLeadList } from '@app/shared'
 import { buildServer } from '../../app.js'
 import { prisma } from '../../lib/prisma.js'
+import { wipeLeadGraph } from '../../lib/wipe-lead-graph.js'
 import { TENANT_ISOLATION } from '../../lib/tenant.js'
 import { loadFixtureCsv, loadFixtureLeads } from './import.fixtures.js'
 
@@ -46,11 +47,11 @@ describe.skipIf(!hasDb)('IMP-1 raw lead import', () => {
   })
 
   beforeEach(async () => {
-    await prisma.rawLeadRecord.deleteMany()
+    await wipeLeadGraph()
   })
 
   afterAll(async () => {
-    await prisma.rawLeadRecord.deleteMany().catch(() => undefined)
+    await wipeLeadGraph().catch(() => undefined)
     await prisma.user.deleteMany({ where: { email } }).catch(() => undefined)
     await prisma.$disconnect()
   })

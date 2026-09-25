@@ -22,6 +22,11 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | GET | `/mock-source/leads` | JWT + `X-Tenant-Id` | фикстуры `source=mock_api` только текущего tenant |
 | POST | `/imports/from-mock-source` | JWT + `X-Tenant-Id` | импорт из mock-source |
 | GET | `/imports/raw` | JWT + `X-Tenant-Id` | сырые записи текущего tenant |
+| POST | `/cases/resolve` | JWT + `X-Tenant-Id` | Person/Company/LeadCase из raw, идемпотентно |
+| GET | `/cases` | JWT + `X-Tenant-Id` | список кейсов текущего tenant |
+| GET | `/cases/:id` | JWT + `X-Tenant-Id` | карточка + raw refs; чужой tenant → 404 |
+
+Дедуп внутри tenant: один `externalId` (любой source) или один домен → одна Company. Нормализованное имя без домена/id **не** склеивает фирмы. LeadCase = Person × Company; один email в двух фирмах → два кейса. Сырьё не удаляется (`RawLeadRecord.leadCaseId`).
 
 Повторный импорт не размножает строки: ключ `tenant + source + externalId`. Строки другого tenant в файле пропускаются (`skippedOtherTenant`). Ключ `WEB-100` из `webinar_csv` и `partner_json` — две raw-строки.
 
@@ -41,6 +46,7 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | `modules/auth` | login / refresh / logout / me |
 | `modules/tenants` | список и current tenant, изоляция |
 | `modules/imports` | CSV/JSON/mock-source → `RawLeadRecord` |
+| `modules/dedup` | нормализация и склейка → `LeadCase` |
 | `lib/tenant.ts` | `X-Tenant-Id`, 404 `TENANT_ISOLATION` |
 | `lib/prisma.ts` | PrismaClient |
 | `lib/refresh-token.ts` | create / rotate / revoke |

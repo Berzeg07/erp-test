@@ -30,8 +30,8 @@
 | **TENANT-1** | Tenant + заголовок изоляции | ✅ | [TZ — tenant](../TZ.md#tenant) |
 | **FIX-1** | Фикстуры ≥60 + expected outcomes | ✅ | [TZ — фикстуры](../TZ.md#фикстуры) |
 | **IMP-1** | Импорт CSV / JSON / mock API | ✅ | [TZ — конвейер](../TZ.md#конвейер) |
-| **DEDUP-1** | Person, Company, связь, LeadCase, дедуп | ⬜ **текущий** | [TZ — дедуп](../TZ.md#правила-дедупа-объяснимые) |
-| **POLICY-1** | basis, guard, suppression, injection | ⬜ | [TZ — ответы 1 и 4](../TZ.md#зафиксированные-ответы-hr) |
+| **DEDUP-1** | Person, Company, связь, LeadCase, дедуп | ✅ | [TZ — дедуп](../TZ.md#правила-дедупа-объяснимые) |
+| **POLICY-1** | basis, guard, suppression, injection | ⬜ **текущий** | [TZ — ответы 1 и 4](../TZ.md#зафиксированные-ответы-hr) |
 | **RULE-1** | Правила `rules-v1` + DecisionRecord | ⬜ | [TZ — квалификация](../TZ.md#правила-квалификации-детерминированные-policy-rules-v1) |
 | **LLM-1** | Mock LLM + схема + бюджет токенов | ⬜ | [TZ — LLM](../TZ.md#llm-adapter-p1) |
 | **DRAFT-1** | Draft + approval версии | ⬜ | [TZ — конвейер п.8–9](../TZ.md#конвейер) |
@@ -120,6 +120,8 @@
 - Тесты: типы дублей; email × две компании → два кейса; два домена без evidence не в одну Company; между tenant не клеить.
 
 **Что нет:** LLM, draft, CRM.
+
+**Статус:** ✅ 2026-09-25. `POST /cases/resolve` строит Person / Company / CompanyContact / LeadCase из raw. Склейка по `external_id` и домену; имя компании — только конфликт `name_only_overlap`, без авто-merge. Raw остаётся и ссылается на кейс. Статус пока `MANUAL_REVIEW` (POLICY-1 ещё не ставит guard).
 
 ---
 

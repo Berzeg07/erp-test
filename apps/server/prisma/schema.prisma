@@ -48,19 +48,137 @@ model Tenant {
   updatedAt DateTime @updatedAt
 
   rawLeadRecords RawLeadRecord[]
+  people         Person[]
+  companies      Company[]
+  companyContacts CompanyContact[]
+  leadCases      LeadCase[]
+}
+
+enum LeadCaseStatus {
+  QUALIFY
+  REJECT
+  MANUAL_REVIEW
+}
+
+enum DeliveryGuard {
+  CLEAR
+  BLOCKED
+}
+
+model Person {
+  id              String   @id @default(uuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  identityKey     String
+  emailNormalized String?
+  displayName     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  companyContacts CompanyContact[]
+  leadCases       LeadCase[]
+
+  @@unique([tenantId, identityKey])
+  @@index([tenantId])
+}
+
+model Company {
+  id             String   @id @default(uuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name           String
+  nameNormalized String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  domains     CompanyDomain[]
+  externalIds CompanyExternalId[]
+  contacts    CompanyContact[]
+  leadCases   LeadCase[]
+
+  @@index([tenantId])
+  @@index([tenantId, nameNormalized])
+}
+
+model CompanyDomain {
+  id        String  @id @default(uuid())
+  tenantId  String
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  domain    String
+
+  @@unique([tenantId, domain])
+  @@index([companyId])
+}
+
+model CompanyExternalId {
+  id         String  @id @default(uuid())
+  tenantId   String
+  companyId  String
+  company    Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  source     String
+  externalId String
+
+  @@unique([tenantId, source, externalId])
+  @@index([tenantId, externalId])
+  @@index([companyId])
+}
+
+model CompanyContact {
+  id        String  @id @default(uuid())
+  tenantId  String
+  tenant    Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  personId  String
+  person    Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leadCases LeadCase[]
+
+  @@unique([tenantId, personId, companyId])
+  @@index([tenantId])
+}
+
+model LeadCase {
+  id               String         @id @default(uuid())
+  tenantId         String
+  tenant           Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  personId         String
+  person           Person         @relation(fields: [personId], references: [id], onDelete: Cascade)
+  companyId        String
+  company          Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyContactId String
+  companyContact   CompanyContact @relation(fields: [companyContactId], references: [id], onDelete: Cascade)
+  status           LeadCaseStatus @default(MANUAL_REVIEW)
+  deliveryGuard    DeliveryGuard  @default(CLEAR)
+  mergeBy          String         @default("none")
+  conflicts        Json
+  reasons          Json
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  rawRecords RawLeadRecord[]
+
+  @@unique([tenantId, personId, companyId])
+  @@index([tenantId])
 }
 
 model RawLeadRecord {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   tenantId   String
-  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   source     String
   externalId String
   fixtureId  String?
   payload    Json
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  leadCaseId String?
+  leadCase   LeadCase? @relation(fields: [leadCaseId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@unique([tenantId, source, externalId])
   @@index([tenantId])
+  @@index([leadCaseId])
 }

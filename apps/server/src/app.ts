@@ -10,6 +10,7 @@ import { authRoutes } from './modules/auth/auth.routes.js'
 import { healthRoutes } from './modules/health/health.routes.js'
 import { tenantRoutes } from './modules/tenants/tenant.routes.js'
 import { importRoutes } from './modules/imports/import.routes.js'
+import { dedupRoutes } from './modules/dedup/dedup.routes.js'
 import type { RequestTenant } from './lib/tenant.js'
 
 declare module '@fastify/jwt' {
@@ -110,6 +111,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
         { name: 'auth', description: 'Operator session' },
         { name: 'tenants', description: 'Tenant isolation' },
         { name: 'imports', description: 'Synthetic raw lead import' },
+        { name: 'cases', description: 'Dedup Person/Company/LeadCase' },
       ],
       components: {
         securitySchemes: {
@@ -140,6 +142,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
   })
   await app.register(tenantRoutes)
   await app.register(importRoutes)
+  await app.register(dedupRoutes)
 
   return app
 }

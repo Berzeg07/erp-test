@@ -1,0 +1,12 @@
+---
+description: Журнал = SLICE-JOURNAL.md (личные заметки по срезам)
+alwaysApply: true
+---
+
+# Журнал
+
+Когда пользователь говорит **Журнал** — это файл `SLICE-JOURNAL.md` в корне репо (gitignored). Это и есть slice journal.
+
+- «Зафиксируй в Журнале» → писать туда, не в `docs/TZ.md` и не в `docs/dev/coding-slices.md`.
+- Канон сдачи по-прежнему TZ и coding-slices; Журнал — личный разбор.
+- Не коммитить `SLICE-JOURNAL.md`.

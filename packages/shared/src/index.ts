@@ -58,3 +58,21 @@ export {
   type RawLeadList,
   type RawLeadStored,
 } from './imports.js'
+export {
+  CaseCompanySchema,
+  CasePersonSchema,
+  DedupConflictSchema,
+  DedupResolveResultSchema,
+  LeadCaseDetailSchema,
+  LeadCaseListSchema,
+  LeadCaseSummarySchema,
+  MergeBySchema,
+  type CaseCompany,
+  type CasePerson,
+  type DedupConflict,
+  type DedupResolveResult,
+  type LeadCaseDetail,
+  type LeadCaseList,
+  type LeadCaseSummary,
+  type MergeBy,
+} from './cases.js'
