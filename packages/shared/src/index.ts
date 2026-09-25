@@ -207,3 +207,14 @@ export {
   type DlqItemPublic,
   type DlqList,
 } from './crm.js'
+export {
+  HUMAN_MINUTES_PER_APPROVAL,
+  HUMAN_MINUTES_PER_REVIEW,
+  KillSwitchBodySchema,
+  MetricsSchema,
+  SYNTHETIC_COST_PER_HUMAN_MINUTE,
+  humanMinutesFromCounts,
+  ratio,
+  type KillSwitchBody,
+  type Metrics,
+} from './metrics.js'

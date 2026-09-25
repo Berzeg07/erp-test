@@ -25,7 +25,8 @@ export const openApiInfo = {
     '4. Черновик `POST /cases/{id}/drafts` → approve → `POST /drafts/{versionId}/send` (outbox, без SMTP).',
     '5. Ответ `POST /replies` (или `POST /replies/from-fixtures`). Оплата/встреча только `POST /events/payments` и `POST /events/meetings`.',
     '6. Mock CRM: `POST /crm/sync` (сбой `x-crm-fault: 429|500` → DLQ). Смотреть `GET /crm/deals`, `GET /dlq`.',
-    '7. Смотреть `GET /cases` / `GET /outbox` / `GET /replies` / `GET /tasks`.',
+    '7. Цифры `GET /metrics` (`synthetic: true`). Рубильник `POST /kill-switch`.',
+    '8. Смотреть `GET /cases` / `GET /outbox` / `GET /replies` / `GET /tasks`.',
     '',
     '## Три разные оси на сырье',
     '',
@@ -135,7 +136,7 @@ export const openApiInfo = {
     '',
     '### Бюджет токенов',
     '',
-    '`GET /tenants/{slug}/budget` (slug = `x-tenant-id`). 250 токенов за вызов. `tokenSpent >= tokenBudget` → `killSwitchOn`, причина `budget_exceeded`, новых вызовов нет. Соседний tenant не трогаем. Импорт и чтение живы. Ручной POST kill-switch — позже (METR-1).',
+    '`GET /tenants/{slug}/budget` (slug = `x-tenant-id`). 250 токенов за вызов. `tokenSpent >= tokenBudget` → `killSwitchOn`, причина `budget_exceeded`, новых вызовов нет. Соседний tenant не трогаем. Импорт и чтение живы. Ручной тумблер: `POST /kill-switch`.',
     '',
     '## Ориентиры в `GET /cases`',
     '',
@@ -180,6 +181,14 @@ export const openApiInfo = {
     '`POST /crm/sync` `{ leadCaseId }` пишет четыре сущности по ключу: компания (tenant+домен), контакт (tenant+email), сделка (tenant+карточка), задача (tenant+follow_up+карточка). Повтор — те же id.',
     '',
     'Сбой: header или query `x-crm-fault` = `429` | `500`. В одном запросе 3 попытки, затем `GET /dlq`. Сущности не создаются. `POST /dlq/{id}/reprocess` без заголовка дописывает теми же ключами, очередь пустеет.',
+    '',
+    '## Метрики и рубильник',
+    '',
+    '`GET /metrics` всегда `synthetic: true`. Счётчики этой квартиры: import, unique leads, QUALIFY, review, BLOCKED, drafts, approvals, mock_sent, replies, meetings, payments.',
+    '',
+    'Минуты человека — константы: approve = 2, карточка MANUAL_REVIEW = 5. Не мышь. expenses = минуты. costPerLead / costPerMeeting / CAC = expenses / unique / meetings / payments (0 если делить не на что).',
+    '',
+    '`POST /kill-switch` `{ "on": true, "reason": "manual" }` глушит mock-LLM и mock-send этой квартиры (`409 KILL_SWITCH_ACTIVE`). Импорт и чтение живы. Соседний tenant не гаснет. Выключить нельзя, если уже `budget_exceeded` (spent >= budget).',
   ].join('\n'),
 }
 
@@ -196,6 +205,7 @@ export const openApiTags = [
   { name: 'replies', description: 'Mock-входящие: шесть типов. Задача на question/opt_out/uncertain. opt_out → suppression + BLOCKED. Positive не оплата.' },
   { name: 'events', description: 'Payment и meeting только отдельным POST. Не выводятся из ответа positive.' },
   { name: 'crm', description: 'Имитация CRM: upsert четырёх сущностей, сбой 429/500, DLQ, reprocess тем же ключом. Живого HubSpot нет.' },
+  { name: 'metrics', description: 'GET /metrics с synthetic:true. POST /kill-switch глушит LLM и send этой квартиры, импорт жив, сосед нет.' },
 ]
 
 export const tenantHeaderSchema = {
@@ -281,7 +291,7 @@ export const routeDocs = {
       '',
       'Каждый реальный вызов mock списывает 250. Карточки BLOCKED не зовут модель — spent не растёт (пример: один Quiet Harbor после resolve → spent 0).',
       '',
-      'tokenSpent >= tokenBudget → killSwitchOn=true, killSwitchReason=budget_exceeded, новых вызовов нет (llmOutput.kind=skipped). Соседний tenant не гаснет. Импорт POST /imports жив. Ручной тумблер POST /kill-switch — срез METR-1.',
+      'tokenSpent >= tokenBudget → killSwitchOn=true, killSwitchReason=budget_exceeded, новых вызовов нет (llmOutput.kind=skipped). Соседний tenant не гаснет. Импорт POST /imports жив. Ручной тумблер: POST /kill-switch.',
     ].join('\n'),
   },
   importsPost: {
@@ -553,6 +563,28 @@ export const routeDocs = {
       'Снова x-crm-fault — остаётся в карантине, CRM пуст. Чужой id / чужой tenant → 404 TENANT_ISOLATION. Повтор после успеха — те же id, idempotent=true.',
     ].join('\n'),
   },
+  metricsGet: {
+    summary: 'Синтетические цифры воронки этой квартиры',
+    description: [
+      'JWT + x-tenant-id. Всегда synthetic=true — это не боевая выручка.',
+      '',
+      'Поля: imported (сырьё), uniqueLeads (карточки), qualified, manualReview, blocked, drafts, approvals, mockSent, replies, meetings, payments.',
+      '',
+      'humanMinutes = approvals×2 + review×5 (константы, не мышь). expenses = минуты. costPerLead / costPerMeeting / cac — расходы на уникального / встречу / оплату; 0 если знаменатель 0.',
+      '',
+      'killSwitchOn / killSwitchReason — рубильник этой квартиры. Сосед в своём GET /metrics не гаснет.',
+    ].join('\n'),
+  },
+  killSwitchPost: {
+    summary: 'Включить или выключить рубильник квартиры',
+    description: [
+      'Тело: { "on": true, "reason": "manual" } или { "on": false }. Глушит mock-LLM и POST /drafts/{versionId}/send. Импорт и чтение живы.',
+      '',
+      'Ответ — как GET /tenants/{slug}/budget. Send при ON → 409 KILL_SWITCH_ACTIVE. Если токены уже кончились (budget_exceeded), выключить нельзя: останется ON.',
+      '',
+      'Соседний tenant не трогаем. Чужой/пустой header → 404 TENANT_ISOLATION.',
+    ].join('\n'),
+  },
 } as const satisfies Record<string, RouteDoc>
 
 export const importLeadItemSchema = {
@@ -741,6 +773,18 @@ export const openApiSchemas = {
     ].join(' '),
     properties: {
       fault: { type: 'string' as const, enum: ['429', '500'] },
+    },
+  },
+  Metrics: {
+    type: 'object' as const,
+    description: [
+      'GET /metrics. Всегда synthetic=true. Счётчики одной квартиры: import, unique, QUALIFY, review, BLOCKED, drafts, approvals, mock_sent, replies, meetings, payments.',
+      'humanMinutes — константы 2 за approve и 5 за review, не телеметрия. expenses и CAC считаются из этих минут.',
+    ].join(' '),
+    properties: {
+      synthetic: { type: 'boolean' as const },
+      uniqueLeads: { type: 'integer' as const },
+      killSwitchOn: { type: 'boolean' as const },
     },
   },
 }

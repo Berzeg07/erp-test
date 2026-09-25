@@ -42,6 +42,11 @@ describe('admin API proxy prefixes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/dlq')
   })
 
+  it('proxies metrics and kill-switch routes', () => {
+    expect(WEB_API_PROXY_PREFIXES).toContain('/metrics')
+    expect(WEB_API_PROXY_PREFIXES).toContain('/kill-switch')
+  })
+
   it('proxies suppression routes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/suppression')
   })

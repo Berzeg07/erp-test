@@ -38,8 +38,8 @@
 | **OUT-1** | Outbox mock-send идемпотентный | ✅ | тот же п.10 |
 | **REPLY-1** | Mock replies + задачи; payment/meeting события | ✅ | [TZ — ответы](../TZ.md#mock-ответы-и-задачи) |
 | **CRM-1** | Upsert CRM, 429/5xx, DLQ, reprocess | ✅ | [TZ — CRM](../TZ.md#mock-crm) |
-| **METR-1** | Метрики SYNTHETIC + kill-switch | ⬜ **текущий** | [TZ — метрики](../TZ.md#метрики-все-с-флагом-synthetic-true) |
-| **UI-1** | Немая демо-панель Vuetify под скринкаст | ⬜ после METR-1 | [screencast.md](./screencast.md), [TZ — UI](../TZ.md#минимальный-ui-vuetify-appsadmin) |
+| **METR-1** | Метрики SYNTHETIC + kill-switch | ✅ | [TZ — метрики](../TZ.md#метрики-все-с-флагом-synthetic-true) |
+| **UI-1** | Немая демо-панель Vuetify под скринкаст | ⬜ **текущий** после METR-1 | [screencast.md](./screencast.md), [TZ — UI](../TZ.md#минимальный-ui-vuetify-appsadmin) |
 | **TEST-1** | Добить ≥18 обязательных тестов | ⬜ можно параллельно с UI-1 | [TZ — тесты](../TZ.md#автотесты-минимум-18) |
 | **DOCS-1** | README, threat model, COMMERCIAL, AI_USAGE, скринкаст | ⬜ последний | [TZ — сдача](../TZ.md#сдача) |
 
@@ -240,6 +240,8 @@
 - Тест budget kill-switch; соседний tenant жив.
 
 **Что нет:** графики.
+
+**Статус:** ✅ 2026-09-25. `GET /metrics` с `synthetic: true` и полями ТЗ (+ `blocked`, рубильник). Минуты: approve 2, review 5. `POST /kill-switch` `{ on, reason }` глушит LLM и send; импорт жив; сосед не гаснет. Авто из бюджета уже с LLM-1: `budget_exceeded` вручную не снять.
 
 ---
 

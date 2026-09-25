@@ -45,6 +45,8 @@ const documented: Array<{ method: string; path: string; doc: keyof typeof routeD
   { method: 'get', path: '/crm/tasks', doc: 'crmTasks' },
   { method: 'get', path: '/dlq', doc: 'dlqList' },
   { method: 'post', path: '/dlq/{id}/reprocess', doc: 'dlqReprocess' },
+  { method: 'get', path: '/metrics', doc: 'metricsGet' },
+  { method: 'post', path: '/kill-switch', doc: 'killSwitchPost' },
 ]
 
 describe('OpenAPI operation docs', () => {
@@ -84,6 +86,8 @@ describe('OpenAPI operation docs', () => {
     expect(body.info?.description).toContain('## Mock CRM')
     expect(body.components?.schemas?.CrmSnapshot?.description).toContain('dealId')
     expect(body.components?.schemas?.DlqItem?.description).toContain('x-crm-fault')
+    expect(body.info?.description).toContain('## Метрики и рубильник')
+    expect(body.components?.schemas?.Metrics?.description).toContain('synthetic=true')
 
     for (const item of documented) {
       const operation = body.paths?.[item.path]?.[item.method]

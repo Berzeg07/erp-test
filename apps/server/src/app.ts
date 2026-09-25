@@ -19,6 +19,7 @@ import { draftRoutes } from './modules/drafts/draft.routes.js'
 import { outboxRoutes } from './modules/outbox/outbox.routes.js'
 import { replyRoutes } from './modules/replies/reply.routes.js'
 import { crmRoutes } from './modules/crm/crm.routes.js'
+import { metricsRoutes } from './modules/metrics/metrics.routes.js'
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {
@@ -147,6 +148,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
   await app.register(outboxRoutes)
   await app.register(replyRoutes)
   await app.register(crmRoutes)
+  await app.register(metricsRoutes)
 
   return app
 }

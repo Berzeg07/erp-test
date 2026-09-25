@@ -50,10 +50,12 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | GET | `/crm/tasks` | JWT + `X-Tenant-Id` | задачи mock CRM |
 | GET | `/dlq` | JWT + `X-Tenant-Id` | карантин сбоя CRM |
 | POST | `/dlq/:id/reprocess` | JWT + `X-Tenant-Id` | повтор доставки тем же ключом |
+| GET | `/metrics` | JWT + `X-Tenant-Id` | синтетические цифры воронки |
+| POST | `/kill-switch` | JWT + `X-Tenant-Id` | рубильник: глушит LLM и send |
 | POST | `/suppression/from-fixtures` | JWT | загрузить `fixtures/suppression.json` |
 | GET | `/suppression` | JWT + `X-Tenant-Id` | стоп-список текущего tenant |
 
-`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. Чистый годный: `QUALIFY` + `CLEAR`. Resolve в конце: policy, rules-v1, затем mock-LLM (`decision.llmOutput`). Сбой модели не QUALIFY. Канал только `mock_email`, CTA фиксирован политикой. Черновик: только QUALIFY + CLEAR, текст из evidence; BLOCKED → 409 `DELIVERY_BLOCKED`. Send: `POST /drafts/:versionId/send` → `MOCK_SENT` в outbox, без SMTP; без approve / stale / BLOCKED / kill-switch → 409. Повтор — тот же `outboxId`. Ответ: `POST /replies`; задача на question/opt_out/uncertain; `opt_out` глушит карточку. Оплата и встреча — только `POST /events/*`, не из positive. Mock CRM: `POST /crm/sync` четыре id; `x-crm-fault` → DLQ; reprocess тем же dealId.
+`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. Чистый годный: `QUALIFY` + `CLEAR`. Resolve в конце: policy, rules-v1, затем mock-LLM (`decision.llmOutput`). Сбой модели не QUALIFY. Канал только `mock_email`, CTA фиксирован политикой. Черновик: только QUALIFY + CLEAR, текст из evidence; BLOCKED → 409 `DELIVERY_BLOCKED`. Send: `POST /drafts/:versionId/send` → `MOCK_SENT` в outbox, без SMTP; без approve / stale / BLOCKED / kill-switch → 409. Повтор — тот же `outboxId`. Ответ: `POST /replies`; задача на question/opt_out/uncertain; `opt_out` глушит карточку. Оплата и встреча — только `POST /events/*`, не из positive. Mock CRM: `POST /crm/sync` четыре id; `x-crm-fault` → DLQ; reprocess тем же dealId. Цифры: `GET /metrics` (`synthetic: true`). Рубильник: `POST /kill-switch` — LLM и send этой квартиры, импорт жив, сосед нет.
 
 Дедуп внутри tenant: один `externalId` (любой source) или один домен → одна Company. Нормализованное имя без домена/id **не** склеивает фирмы. LeadCase = Person × Company; один email в двух фирмах → два кейса. Сырьё не удаляется (`RawLeadRecord.leadCaseId`).
 
@@ -83,6 +85,7 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | `modules/outbox` | `OutboxMessage`, идемпотентный send, `GET /outbox` |
 | `modules/replies` | mock-ответы, задачи менеджеру, payment/meeting события |
 | `modules/crm` | mock CRM upsert, 429/5xx, DLQ, reprocess |
+| `modules/metrics` | `GET /metrics`, ручной `POST /kill-switch` |
 | `lib/tenant.ts` | `X-Tenant-Id`, 404 `TENANT_ISOLATION` |
 | `lib/prisma.ts` | PrismaClient |
 | `lib/refresh-token.ts` | create / rotate / revoke |
