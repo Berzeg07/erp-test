@@ -296,8 +296,9 @@ Kill-switch: ручной `POST` и авто из бюджета. Глушит L
 - `GET /outbox` — mock-отправки текущей квартиры
 - `POST /replies` `{ leadCaseId, type }`; `POST /replies/from-fixtures`; `GET /replies`; `GET /tasks`
 - `POST /events/meetings`, `POST /events/payments` — не выводятся из positive; списки GET
+- `POST /crm/sync` `{ leadCaseId }` — upsert 4 сущностей; `x-crm-fault: 429|500` → DLQ
 - `GET /crm/{companies,contacts,deals,tasks}`
-- `GET /dlq`, `POST /dlq/:id/reprocess`
+- `GET /dlq`, `POST /dlq/:id/reprocess` — тот же ключ, без дублей
 - `GET /metrics`
 - `POST /kill-switch` `{ on, reason }`
 - `GET /tenants/:id/budget`

@@ -24,7 +24,8 @@ export const openApiInfo = {
     '3. `POST /cases/resolve` — склейка, затем policy (`deliveryGuard`), rules-v1 (`status`, `score`, `DecisionRecord`) и mock-LLM (совет в `decision.llmOutput`).',
     '4. Черновик `POST /cases/{id}/drafts` → approve → `POST /drafts/{versionId}/send` (outbox, без SMTP).',
     '5. Ответ `POST /replies` (или `POST /replies/from-fixtures`). Оплата/встреча только `POST /events/payments` и `POST /events/meetings`.',
-    '6. Смотреть `GET /cases` / `GET /outbox` / `GET /replies` / `GET /tasks`.',
+    '6. Mock CRM: `POST /crm/sync` (сбой `x-crm-fault: 429|500` → DLQ). Смотреть `GET /crm/deals`, `GET /dlq`.',
+    '7. Смотреть `GET /cases` / `GET /outbox` / `GET /replies` / `GET /tasks`.',
     '',
     '## Три разные оси на сырье',
     '',
@@ -173,6 +174,12 @@ export const openApiInfo = {
     '`opt_out` → email в стоп-список + карточка `MANUAL_REVIEW` + `BLOCKED` / `opt_out`. Импорт запланированных: `POST /replies/from-fixtures` (поле raw `plannedReply`).',
     '',
     'Оплата: `POST /events/payments`. Встреча: `POST /events/meetings`. Это отдельные события, не вывод из positive.',
+    '',
+    '## Mock CRM (не HubSpot)',
+    '',
+    '`POST /crm/sync` `{ leadCaseId }` пишет четыре сущности по ключу: компания (tenant+домен), контакт (tenant+email), сделка (tenant+карточка), задача (tenant+follow_up+карточка). Повтор — те же id.',
+    '',
+    'Сбой: header или query `x-crm-fault` = `429` | `500`. В одном запросе 3 попытки, затем `GET /dlq`. Сущности не создаются. `POST /dlq/{id}/reprocess` без заголовка дописывает теми же ключами, очередь пустеет.',
   ].join('\n'),
 }
 
@@ -188,6 +195,7 @@ export const openApiTags = [
   { name: 'outbox', description: 'Локальный mock-outbox. SMTP нет. GET /outbox — что «отправили» в этой квартире.' },
   { name: 'replies', description: 'Mock-входящие: шесть типов. Задача на question/opt_out/uncertain. opt_out → suppression + BLOCKED. Positive не оплата.' },
   { name: 'events', description: 'Payment и meeting только отдельным POST. Не выводятся из ответа positive.' },
+  { name: 'crm', description: 'Имитация CRM: upsert четырёх сущностей, сбой 429/500, DLQ, reprocess тем же ключом. Живого HubSpot нет.' },
 ]
 
 export const tenantHeaderSchema = {
@@ -500,6 +508,51 @@ export const routeDocs = {
     summary: 'Встречи этой квартиры',
     description: 'JWT + x-tenant-id. Пусто, пока не было POST /events/meetings. Не путать с ответом positive.',
   },
+  crmSync: {
+    summary: 'Записать карточку в mock CRM (четыре сущности)',
+    description: [
+      'Тело: { "leadCaseId" }. HubSpot нет — upsert в нашей базе. Ключи: компания tenant+домен, контакт tenant+email, сделка tenant+leadCaseId, задача tenant+follow_up+leadCaseId.',
+      '',
+      'Повтор без сбоя: те же четыре id, idempotent=true. Чужой id → 404 TENANT_ISOLATION.',
+      '',
+      'Сбой: header x-crm-fault (или query) = 429 | 500. Три попытки в этом запросе → GET /dlq, CRM пуст, ответ 429 CRM_429 или 502 CRM_5XX. Уже доставленное повтор со сбоем не откатывает.',
+    ].join('\n'),
+  },
+  crmCompanies: {
+    summary: 'Компании mock CRM этой квартиры',
+    description:
+      'JWT + x-tenant-id. Список после успешного POST /crm/sync. Ключ tenant+домен: повтор sync не плодит вторую фирму. Сосед пустой.',
+  },
+  crmContacts: {
+    summary: 'Контакты mock CRM этой квартиры',
+    description: 'Ключ tenant+email. Повтор sync — тот же contactId. Это не Person из дедупа, а копия «как в CRM».',
+  },
+  crmDeals: {
+    summary: 'Сделки mock CRM этой квартиры',
+    description:
+      'Ключ tenant+leadCaseId. После сбоя 500 сделки нет, пока POST /dlq/{id}/reprocess не пройдёт. Reprocess возвращает тот же dealId.',
+  },
+  crmTasks: {
+    summary: 'Задачи mock CRM этой квартиры',
+    description:
+      'Тип follow_up, ключ tenant+type+leadCaseId. Не путать с GET /tasks (задачи менеджеру с mock-ответа).',
+  },
+  dlqList: {
+    summary: 'Карантин неудачной доставки в mock CRM',
+    description: [
+      'Только неразрешённые строки (resolvedAt=null). Появляются после x-crm-fault на POST /crm/sync: fault 429 или 500, attempts=3.',
+      '',
+      'Пустой items[] = сбоев нет или уже reprocess. Соседний tenant своих DLQ не видит.',
+    ].join('\n'),
+  },
+  dlqReprocess: {
+    summary: 'Повторить доставку из DLQ тем же ключом',
+    description: [
+      'Body нет. Без x-crm-fault: upsert четырёх сущностей, тот же dealId что был бы с первого раза, строка DLQ пропадает из GET /dlq.',
+      '',
+      'Снова x-crm-fault — остаётся в карантине, CRM пуст. Чужой id / чужой tenant → 404 TENANT_ISOLATION. Повтор после успеха — те же id, idempotent=true.',
+    ].join('\n'),
+  },
 } as const satisfies Record<string, RouteDoc>
 
 export const importLeadItemSchema = {
@@ -668,6 +721,26 @@ export const openApiSchemas = {
       'Оплата только отдельным POST /events/payments. Positive reply это поле не заполняет и строку не создаёт.',
     properties: {
       paymentId: { type: 'string' as const, format: 'uuid' },
+    },
+  },
+  CrmSnapshot: {
+    type: 'object' as const,
+    description: [
+      'Четыре id mock CRM после POST /crm/sync или reprocess: companyId, contactId, dealId, taskId.',
+      'Ключи upsert стабильны: повтор и reprocess не плодят вторую сделку. HubSpot нет.',
+    ].join(' '),
+    properties: {
+      dealId: { type: 'string' as const, format: 'uuid' },
+    },
+  },
+  DlqItem: {
+    type: 'object' as const,
+    description: [
+      'Карантин после 429/500 mock CRM (x-crm-fault). attempts=3. Пока resolvedAt=null — в GET /dlq.',
+      'POST /dlq/{id}/reprocess без заголовка пишет CRM тем же ключом и убирает строку из списка.',
+    ].join(' '),
+    properties: {
+      fault: { type: 'string' as const, enum: ['429', '500'] },
     },
   },
 }

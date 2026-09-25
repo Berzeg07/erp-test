@@ -67,6 +67,12 @@ model Tenant {
   managerTasks    ManagerTask[]
   paymentEvents   PaymentEvent[]
   meetingEvents   MeetingEvent[]
+  crmCompanies    CrmCompany[]
+  crmContacts     CrmContact[]
+  crmDeals        CrmDeal[]
+  crmTasks        CrmTask[]
+  crmOutboxes     CrmOutbox[]
+  dlqItems        DlqItem[]
 }
 
 enum LeadCaseStatus {
@@ -196,6 +202,9 @@ model LeadCase {
   managerTasks     ManagerTask[]
   paymentEvents    PaymentEvent[]
   meetingEvents    MeetingEvent[]
+  crmDeals         CrmDeal[]
+  crmTasks         CrmTask[]
+  crmOutbox        CrmOutbox?
 
   @@unique([tenantId, personId, companyId])
   @@index([tenantId])
@@ -377,4 +386,105 @@ model MeetingEvent {
 
   @@unique([tenantId, leadCaseId])
   @@index([tenantId])
+}
+
+model CrmCompany {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  domain    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contacts CrmContact[]
+  deals    CrmDeal[]
+
+  @@unique([tenantId, domain])
+  @@index([tenantId])
+}
+
+model CrmContact {
+  id              String      @id @default(uuid())
+  tenantId        String
+  tenant          Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  emailNormalized String
+  displayName     String?
+  companyId       String?
+  company         CrmCompany? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  deals CrmDeal[]
+
+  @@unique([tenantId, emailNormalized])
+  @@index([tenantId])
+}
+
+model CrmDeal {
+  id         String     @id @default(uuid())
+  tenantId   String
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId String
+  leadCase   LeadCase   @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  companyId  String
+  company    CrmCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contactId  String
+  contact    CrmContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([tenantId, leadCaseId])
+  @@index([tenantId])
+}
+
+model CrmTask {
+  id         String   @id @default(uuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId String
+  leadCase   LeadCase @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  type       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tenantId, type, leadCaseId])
+  @@index([tenantId])
+}
+
+model CrmOutbox {
+  id         String   @id @default(uuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId String   @unique
+  leadCase   LeadCase @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  status     String
+  attempts   Int      @default(0)
+  lastFault  String?
+  companyId  String?
+  contactId  String?
+  dealId     String?
+  taskId     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  dlqItems DlqItem[]
+
+  @@index([tenantId])
+}
+
+model DlqItem {
+  id         String    @id @default(uuid())
+  tenantId   String
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  outboxId   String
+  outbox     CrmOutbox @relation(fields: [outboxId], references: [id], onDelete: Cascade)
+  leadCaseId String
+  fault      String
+  attempts   Int
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([tenantId])
+  @@index([outboxId])
 }

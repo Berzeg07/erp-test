@@ -37,6 +37,11 @@ describe('admin API proxy prefixes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/events')
   })
 
+  it('proxies mock CRM and DLQ routes', () => {
+    expect(WEB_API_PROXY_PREFIXES).toContain('/crm')
+    expect(WEB_API_PROXY_PREFIXES).toContain('/dlq')
+  })
+
   it('proxies suppression routes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/suppression')
   })

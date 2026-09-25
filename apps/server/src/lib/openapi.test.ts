@@ -38,6 +38,13 @@ const documented: Array<{ method: string; path: string; doc: keyof typeof routeD
   { method: 'get', path: '/events/payments', doc: 'eventsPaymentsList' },
   { method: 'post', path: '/events/meetings', doc: 'eventsMeetingsPost' },
   { method: 'get', path: '/events/meetings', doc: 'eventsMeetingsList' },
+  { method: 'post', path: '/crm/sync', doc: 'crmSync' },
+  { method: 'get', path: '/crm/companies', doc: 'crmCompanies' },
+  { method: 'get', path: '/crm/contacts', doc: 'crmContacts' },
+  { method: 'get', path: '/crm/deals', doc: 'crmDeals' },
+  { method: 'get', path: '/crm/tasks', doc: 'crmTasks' },
+  { method: 'get', path: '/dlq', doc: 'dlqList' },
+  { method: 'post', path: '/dlq/{id}/reprocess', doc: 'dlqReprocess' },
 ]
 
 describe('OpenAPI operation docs', () => {
@@ -74,6 +81,9 @@ describe('OpenAPI operation docs', () => {
     expect(body.info?.description).toContain('## Ответы')
     expect(body.components?.schemas?.InboundReply?.description).toContain('positive')
     expect(body.components?.schemas?.PaymentEvent?.description).toContain('events/payments')
+    expect(body.info?.description).toContain('## Mock CRM')
+    expect(body.components?.schemas?.CrmSnapshot?.description).toContain('dealId')
+    expect(body.components?.schemas?.DlqItem?.description).toContain('x-crm-fault')
 
     for (const item of documented) {
       const operation = body.paths?.[item.path]?.[item.method]
