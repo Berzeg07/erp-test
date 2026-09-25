@@ -1,7 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import { DedupResolveResultSchema, LeadCaseDetailSchema, LeadCaseListSchema } from '@app/shared'
-import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
+import { llmFaultHeaderSchema, routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
 import { TENANT_ISOLATION, resolveTenant } from '../../lib/tenant.js'
+import { readLlmFault } from '../llm/llm.service.js'
 import { getLeadCase, listLeadCases, resolveLeadCases } from './dedup.service.js'
 
 export async function dedupRoutes(app: FastifyInstance) {
@@ -16,10 +17,13 @@ export async function dedupRoutes(app: FastifyInstance) {
           tags: ['cases'],
           ...routeDocs.casesResolve,
           security: [{ bearerAuth: [] }],
-          headers: tenantHeaderSchema,
+          headers: llmFaultHeaderSchema,
         },
       },
-      async (request) => DedupResolveResultSchema.parse(await resolveLeadCases(request.tenant!)),
+      async (request) =>
+        DedupResolveResultSchema.parse(
+          await resolveLeadCases(request.tenant!, { llmFault: readLlmFault(request) }),
+        ),
     )
 
     scoped.get(

@@ -2,6 +2,7 @@ import {
   DedupResolveResultSchema,
   LeadCaseDetailSchema,
   LeadCaseListSchema,
+  LlmOutputStoredSchema,
   RawLeadRecordSchema,
   type DedupResolveResult,
   type LeadCaseDetail,
@@ -12,7 +13,7 @@ import type { Prisma } from '@prisma/client'
 import type { RequestTenant } from '../../lib/tenant.js'
 import { prisma } from '../../lib/prisma.js'
 import { applyPolicy } from '../policy/policy.service.js'
-import { applyRules } from '../rules/rules.service.js'
+import { applyRules, type ApplyRulesOptions } from '../rules/rules.service.js'
 import { normalizeCompanyName, normalizeDomain, normalizeEmail, strongerMergeBy } from './normalize.js'
 
 function asStringArray(value: Prisma.JsonValue): string[] {
@@ -130,7 +131,7 @@ async function attachCompanyKeys(
   })
 }
 
-export async function resolveLeadCases(tenant: RequestTenant): Promise<DedupResolveResult> {
+export async function resolveLeadCases(tenant: RequestTenant, options?: ApplyRulesOptions): Promise<DedupResolveResult> {
   const raws = await prisma.rawLeadRecord.findMany({
     where: { tenantId: tenant.id },
     orderBy: [{ createdAt: 'asc' }, { source: 'asc' }, { externalId: 'asc' }],
@@ -207,7 +208,7 @@ export async function resolveLeadCases(tenant: RequestTenant): Promise<DedupReso
 
   await applyConflicts(tenant.id)
   await applyPolicy(tenant)
-  await applyRules(tenant)
+  await applyRules(tenant, options)
 
   const [cases, persons, companies] = await Promise.all([
     prisma.leadCase.count({ where: { tenantId: tenant.id } }),
@@ -350,6 +351,11 @@ const caseInclude = {
   decisionRecord: true,
 } as const
 
+function toLlmOutput(value: Prisma.JsonValue) {
+  const parsed = LlmOutputStoredSchema.safeParse(value)
+  return parsed.success ? parsed.data : null
+}
+
 function toDecision(
   row: {
     id: string
@@ -373,7 +379,7 @@ function toDecision(
     score: row.score,
     confidence: row.confidence,
     reasons: asStringArray(row.reasons),
-    llmOutput: null,
+    llmOutput: toLlmOutput(row.llmOutput),
   }
 }
 

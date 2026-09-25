@@ -33,8 +33,8 @@
 | **DEDUP-1** | Person, Company, связь, LeadCase, дедуп | ✅ | [TZ — дедуп](../TZ.md#правила-дедупа-объяснимые) |
 | **POLICY-1** | basis, guard, suppression, injection | ✅ | [TZ — ответы 1 и 4](../TZ.md#зафиксированные-ответы-hr) |
 | **RULE-1** | Правила `rules-v1` + DecisionRecord | ✅ | [TZ — квалификация](../TZ.md#правила-квалификации-детерминированные-policy-rules-v1) |
-| **LLM-1** | Mock LLM + схема + бюджет токенов | ⬜ **текущий** | [TZ — LLM](../TZ.md#llm-adapter-p1) |
-| **DRAFT-1** | Draft + approval версии | ⬜ | [TZ — конвейер п.8–9](../TZ.md#конвейер) |
+| **LLM-1** | Mock LLM + схема + бюджет токенов | ✅ | [TZ — LLM](../TZ.md#llm-adapter-p1) |
+| **DRAFT-1** | Draft + approval версии | ⬜ **текущий** | [TZ — конвейер п.8–9](../TZ.md#конвейер) |
 | **OUT-1** | Outbox mock-send идемпотентный | ⬜ | тот же п.10 |
 | **REPLY-1** | Mock replies + задачи; payment/meeting события | ⬜ | [TZ — ответы](../TZ.md#mock-ответы-и-задачи) |
 | **CRM-1** | Upsert CRM, 429/5xx, DLQ, reprocess | ⬜ | [TZ — CRM](../TZ.md#mock-crm) |
@@ -168,6 +168,8 @@
 - LLM не пишет `processing_basis`.
 
 **Что нет:** живой OpenAI.
+
+**Статус:** ✅ 2026-09-25. Mock без ключей. Zod `LlmAdviceSchema` (strict). Заголовок `X-LLM-Fault`. Невалидный JSON / timeout / 429 / injection → `MANUAL_REVIEW`, не QUALIFY. Locked: tenant из заголовка, канал `mock_email`, CTA `book_a_15min_demo`. `processingBasis` не из модели. `GET /tenants/:slug/budget`; `spent >= budget` → `killSwitchOn` / `budget_exceeded`, соседний tenant не трогаем, импорт жив. BLOCKED карточки модель не зовут.
 
 ---
 

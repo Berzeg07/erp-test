@@ -1,8 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import { LeadCaseDetailSchema, RulesApplyResultSchema } from '@app/shared'
-import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
+import { llmFaultHeaderSchema, routeDocs } from '../../lib/openapi.js'
 import { TENANT_ISOLATION, resolveTenant } from '../../lib/tenant.js'
 import { getLeadCase } from '../dedup/dedup.service.js'
+import { readLlmFault } from '../llm/llm.service.js'
 import { applyRules, applyRulesForCaseId } from './rules.service.js'
 
 export async function rulesRoutes(app: FastifyInstance) {
@@ -17,10 +18,10 @@ export async function rulesRoutes(app: FastifyInstance) {
           tags: ['rules'],
           ...routeDocs.casesApplyRules,
           security: [{ bearerAuth: [] }],
-          headers: tenantHeaderSchema,
+          headers: llmFaultHeaderSchema,
         },
       },
-      async (request) => RulesApplyResultSchema.parse(await applyRules(request.tenant!)),
+      async (request) => RulesApplyResultSchema.parse(await applyRules(request.tenant!, { llmFault: readLlmFault(request) })),
     )
 
     scoped.post<{ Params: { id: string } }>(
@@ -30,7 +31,7 @@ export async function rulesRoutes(app: FastifyInstance) {
           tags: ['rules'],
           ...routeDocs.casesQualify,
           security: [{ bearerAuth: [] }],
-          headers: tenantHeaderSchema,
+          headers: llmFaultHeaderSchema,
           params: {
             type: 'object',
             required: ['id'],
@@ -39,7 +40,9 @@ export async function rulesRoutes(app: FastifyInstance) {
         },
       },
       async (request, reply) => {
-        const applied = await applyRulesForCaseId(request.tenant!, request.params.id)
+        const applied = await applyRulesForCaseId(request.tenant!, request.params.id, {
+          llmFault: readLlmFault(request),
+        })
         if (!applied) {
           return reply.code(404).send({ error: TENANT_ISOLATION })
         }

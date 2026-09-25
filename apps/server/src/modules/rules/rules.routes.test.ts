@@ -116,7 +116,7 @@ describe.skipIf(!hasDb)('RULE-1 rules-v1 qualification', () => {
     await app.close()
   })
 
-  it('qualifies a complete consent case and stores DecisionRecord without LLM', async () => {
+  it('qualifies a complete consent case and stores DecisionRecord with mock LLM advice', async () => {
     const app = await withApp()
     const listed = await importResolve(app, 'athenai_demo', ['a-dup-ext-1', 'a-dup-ext-1b'])
     expect(listed.cases).toHaveLength(1)
@@ -137,7 +137,11 @@ describe.skipIf(!hasDb)('RULE-1 rules-v1 qualification', () => {
     expect(body.decision).toMatchObject({
       policyVersion: 'rules-v1',
       status: 'QUALIFY',
-      llmOutput: null,
+    })
+    expect(body.decision?.llmOutput).toMatchObject({
+      kind: 'advice',
+      advice: 'qualify',
+      locked: { tenant: 'athenai_demo', channel: 'mock_email', cta: 'book_a_15min_demo' },
     })
     expect(body.decision?.reasons).toContain('rules_v1_qualify')
     await app.close()
@@ -197,7 +201,7 @@ describe.skipIf(!hasDb)('RULE-1 rules-v1 qualification', () => {
     expect(qualified.statusCode).toBe(200)
     const body = qualified.json() as LeadCaseDetail
     expect(body.status).toBe('QUALIFY')
-    expect(body.decision?.llmOutput).toBeNull()
+    expect(body.decision?.llmOutput).toMatchObject({ kind: 'advice', advice: 'qualify' })
 
     const leaked = await app.inject({
       method: 'POST',

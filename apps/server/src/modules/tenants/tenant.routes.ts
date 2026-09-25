@@ -1,8 +1,9 @@
 import type { FastifyInstance } from 'fastify'
-import { TenantListSchema, TenantPublicSchema } from '@app/shared'
+import { TenantBudgetSchema, TenantListSchema, TenantPublicSchema } from '@app/shared'
 import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
 import { prisma } from '../../lib/prisma.js'
 import { assertSameTenant, resolveTenant } from '../../lib/tenant.js'
+import { getTenantBudget } from '../llm/llm.service.js'
 
 const tenantResponseSchema = {
   type: 'object',
@@ -50,6 +51,27 @@ export async function tenantRoutes(app: FastifyInstance) {
         },
       },
       async (request) => TenantPublicSchema.parse(request.tenant),
+    )
+
+    scoped.get<{ Params: { slug: string } }>(
+      '/tenants/:slug/budget',
+      {
+        schema: {
+          tags: ['tenants'],
+          ...routeDocs.tenantsBudget,
+          security: [{ bearerAuth: [] }],
+          headers: tenantHeaderSchema,
+          params: {
+            type: 'object',
+            required: ['slug'],
+            properties: { slug: { type: 'string' } },
+          },
+        },
+      },
+      async (request, reply) => {
+        if (!assertSameTenant(request, request.params.slug, reply)) return
+        return TenantBudgetSchema.parse(await getTenantBudget(request.tenant!))
+      },
     )
 
     scoped.get<{ Params: { slug: string } }>(

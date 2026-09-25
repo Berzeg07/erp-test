@@ -1,9 +1,10 @@
 import type { FastifyInstance } from 'fastify'
 import { PolicyApplyResultSchema, SuppressionListSchema } from '@app/shared'
-import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
+import { llmFaultHeaderSchema, routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
 import { resolveTenant } from '../../lib/tenant.js'
 import { applyPolicy, listSuppression, upsertSuppressionFromFixtures } from './policy.service.js'
 import { applyRules } from '../rules/rules.service.js'
+import { readLlmFault } from '../llm/llm.service.js'
 
 export async function policyRoutes(app: FastifyInstance) {
   app.post(
@@ -43,12 +44,12 @@ export async function policyRoutes(app: FastifyInstance) {
           tags: ['policy'],
           ...routeDocs.casesApplyPolicy,
           security: [{ bearerAuth: [] }],
-          headers: tenantHeaderSchema,
+          headers: llmFaultHeaderSchema,
         },
       },
       async (request) => {
         const result = await applyPolicy(request.tenant!)
-        await applyRules(request.tenant!)
+        await applyRules(request.tenant!, { llmFault: readLlmFault(request) })
         return PolicyApplyResultSchema.parse(result)
       },
     )

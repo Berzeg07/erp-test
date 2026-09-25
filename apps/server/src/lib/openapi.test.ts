@@ -11,6 +11,7 @@ const documented: Array<{ method: string; path: string; doc: keyof typeof routeD
   { method: 'get', path: '/tenants', doc: 'tenantsList' },
   { method: 'get', path: '/tenants/current', doc: 'tenantsCurrent' },
   { method: 'get', path: '/tenants/{slug}', doc: 'tenantsBySlug' },
+  { method: 'get', path: '/tenants/{slug}/budget', doc: 'tenantsBudget' },
   { method: 'post', path: '/imports', doc: 'importsPost' },
   { method: 'get', path: '/mock-source/leads', doc: 'mockSourceGet' },
   { method: 'post', path: '/imports/from-mock-source', doc: 'importsFromMock' },

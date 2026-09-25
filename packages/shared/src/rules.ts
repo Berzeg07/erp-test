@@ -8,6 +8,7 @@ import {
   type LeadCaseStatus,
   type ProcessingBasis,
 } from './fixtures.js'
+import { LlmOutputStoredSchema } from './llm.js'
 
 export const RULES_POLICY_VERSION = 'rules-v1' as const
 
@@ -45,7 +46,7 @@ export const DecisionRecordPublicSchema = z.object({
   score: z.number().int(),
   confidence: z.number(),
   reasons: z.array(z.string()),
-  llmOutput: z.null(),
+  llmOutput: LlmOutputStoredSchema.nullable(),
 })
 export type DecisionRecordPublic = z.infer<typeof DecisionRecordPublicSchema>
 

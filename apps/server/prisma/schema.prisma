@@ -41,11 +41,15 @@ model RefreshToken {
 }
 
 model Tenant {
-  id        String   @id @default(uuid())
-  slug      String   @unique
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  slug               String   @unique
+  name               String
+  llmTokenBudget     Int      @default(10000)
+  llmTokenSpent      Int      @default(0)
+  killSwitchOn       Boolean  @default(false)
+  killSwitchReason   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   rawLeadRecords RawLeadRecord[]
   people         Person[]

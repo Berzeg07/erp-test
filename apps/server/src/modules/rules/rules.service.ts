@@ -3,11 +3,17 @@ import {
   RawLeadRecordSchema,
   RulesApplyResultSchema,
   evaluateRulesV1,
+  type LlmMockFault,
   type RulesApplyResult,
 } from '@app/shared'
 import { Prisma } from '@prisma/client'
 import type { RequestTenant } from '../../lib/tenant.js'
 import { prisma } from '../../lib/prisma.js'
+import { applyLlmToCase } from '../llm/llm.service.js'
+
+export type ApplyRulesOptions = {
+  llmFault?: LlmMockFault
+}
 
 function asStringArray(value: Prisma.JsonValue): string[] {
   if (!Array.isArray(value)) return []
@@ -76,52 +82,51 @@ export async function applyRulesToCase(item: CaseRow): Promise<ReturnType<typeof
     reasons: output.reasons as Prisma.InputJsonValue,
     evidenceRefs: evidenceRefs as Prisma.InputJsonValue,
     ruleOutput: output as unknown as Prisma.InputJsonValue,
-    llmOutput: Prisma.JsonNull,
   }
 
   await prisma.decisionRecord.upsert({
     where: { leadCaseId: item.id },
-    create: { leadCaseId: item.id, ...record },
+    create: { leadCaseId: item.id, ...record, llmOutput: Prisma.JsonNull },
     update: record,
   })
 
   return output
 }
 
-export async function applyRules(tenant: RequestTenant): Promise<RulesApplyResult> {
+export async function applyRules(tenant: RequestTenant, options?: ApplyRulesOptions): Promise<RulesApplyResult> {
   const cases = await prisma.leadCase.findMany({
     where: { tenantId: tenant.id },
     include: { person: true, rawRecords: true },
     orderBy: { createdAt: 'asc' },
   })
 
-  let qualified = 0
-  let rejected = 0
-  let review = 0
-
   for (const item of cases) {
-    const output = await applyRulesToCase(item)
-    if (output.status === 'QUALIFY') qualified += 1
-    else if (output.status === 'REJECT') rejected += 1
-    else review += 1
+    await applyRulesToCase(item)
+    await applyLlmToCase(tenant, item.id, options)
   }
+
+  const refreshed = await prisma.leadCase.findMany({
+    where: { tenantId: tenant.id },
+    select: { status: true },
+  })
 
   return RulesApplyResultSchema.parse({
     synthetic: true,
     tenant: tenant.slug,
     policyVersion: RULES_POLICY_VERSION,
-    qualified,
-    rejected,
-    review,
+    qualified: refreshed.filter((row) => row.status === 'QUALIFY').length,
+    rejected: refreshed.filter((row) => row.status === 'REJECT').length,
+    review: refreshed.filter((row) => row.status === 'MANUAL_REVIEW').length,
   })
 }
 
-export async function applyRulesForCaseId(tenant: RequestTenant, caseId: string) {
+export async function applyRulesForCaseId(tenant: RequestTenant, caseId: string, options?: ApplyRulesOptions) {
   const item = await prisma.leadCase.findFirst({
     where: { id: caseId, tenantId: tenant.id },
     include: { person: true, rawRecords: true },
   })
   if (!item) return null
   await applyRulesToCase(item)
+  await applyLlmToCase(tenant, item.id, options)
   return item.id
 }

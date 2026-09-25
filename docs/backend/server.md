@@ -18,6 +18,7 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | GET | `/tenants` | JWT | список slug/name (без лидов) |
 | GET | `/tenants/current` | JWT + `X-Tenant-Id` | текущий tenant |
 | GET | `/tenants/:slug` | JWT + `X-Tenant-Id` | 200 только если заголовок = slug, иначе 404 |
+| GET | `/tenants/:slug/budget` | JWT + `X-Tenant-Id` | токены mock-LLM: budget / spent / kill-switch |
 | POST | `/imports` | JWT + `X-Tenant-Id` | JSON `{ leads }` / `{ csv }` или `text/csv` → идемпотентный upsert `RawLeadRecord` |
 | GET | `/mock-source/leads` | JWT + `X-Tenant-Id` | фикстуры `source=mock_api` только текущего tenant |
 | POST | `/imports/from-mock-source` | JWT + `X-Tenant-Id` | импорт из mock-source |
@@ -25,13 +26,13 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | POST | `/cases/resolve` | JWT + `X-Tenant-Id` | Person/Company/LeadCase из raw, идемпотентно |
 | GET | `/cases` | JWT + `X-Tenant-Id` | список кейсов текущего tenant |
 | GET | `/cases/:id` | JWT + `X-Tenant-Id` | карточка + raw refs; чужой tenant → 404 |
-| POST | `/cases/apply-policy` | JWT + `X-Tenant-Id` | guard, затем rules-v1 |
-| POST | `/cases/apply-rules` | JWT + `X-Tenant-Id` | QUALIFY/REJECT/REVIEW + DecisionRecord |
+| POST | `/cases/apply-policy` | JWT + `X-Tenant-Id` | guard, затем rules-v1 и mock-LLM |
+| POST | `/cases/apply-rules` | JWT + `X-Tenant-Id` | QUALIFY/REJECT/REVIEW + DecisionRecord + mock-LLM |
 | POST | `/cases/:id/qualify` | JWT + `X-Tenant-Id` | то же на одну карточку; чужой id → 404 |
 | POST | `/suppression/from-fixtures` | JWT | загрузить `fixtures/suppression.json` |
 | GET | `/suppression` | JWT + `X-Tenant-Id` | стоп-список текущего tenant |
 
-`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. Чистый годный: `QUALIFY` + `CLEAR`. Resolve в конце: policy, затем rules-v1. LLM-слот DecisionRecord пока пустой.
+`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. Чистый годный: `QUALIFY` + `CLEAR`. Resolve в конце: policy, rules-v1, затем mock-LLM (`decision.llmOutput`). Сбой модели не QUALIFY. Канал только `mock_email`, CTA фиксирован политикой. `X-LLM-Fault` в dev: `invalid_json` / `timeout` / `429` / `injection`.
 
 Дедуп внутри tenant: один `externalId` (любой source) или один домен → одна Company. Нормализованное имя без домена/id **не** склеивает фирмы. LeadCase = Person × Company; один email в двух фирмах → два кейса. Сырьё не удаляется (`RawLeadRecord.leadCaseId`).
 
@@ -51,11 +52,12 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | ---- | ---- |
 | `modules/health` | healthcheck |
 | `modules/auth` | login / refresh / logout / me |
-| `modules/tenants` | список и current tenant, изоляция |
+| `modules/tenants` | список, current, бюджет mock-LLM, изоляция |
 | `modules/imports` | CSV/JSON/mock-source → `RawLeadRecord` |
 | `modules/dedup` | нормализация и склейка → `LeadCase` |
 | `modules/policy` | deliveryGuard, suppression, injection |
 | `modules/rules` | rules-v1, DecisionRecord, QUALIFY/REJECT |
+| `modules/llm` | mock-адаптер, Zod-совет, бюджет токенов, kill-switch из бюджета |
 | `lib/tenant.ts` | `X-Tenant-Id`, 404 `TENANT_ISOLATION` |
 | `lib/prisma.ts` | PrismaClient |
 | `lib/refresh-token.ts` | create / rotate / revoke |

@@ -21,7 +21,7 @@ export const openApiInfo = {
     '',
     '1. Импорт сырья (`POST /imports` или `POST /imports/from-mock-source`).',
     '2. Стоп-список (`POST /suppression/from-fixtures`) — по желанию.',
-    '3. `POST /cases/resolve` — склейка, затем policy (`deliveryGuard`) и rules-v1 (`status`, `score`, `DecisionRecord`).',
+    '3. `POST /cases/resolve` — склейка, затем policy (`deliveryGuard`), rules-v1 (`status`, `score`, `DecisionRecord`) и mock-LLM (совет в `decision.llmOutput`).',
     '4. Смотреть `GET /cases` / `GET /cases/{id}`.',
     '',
     '## Три разные оси на сырье',
@@ -83,7 +83,7 @@ export const openApiInfo = {
     '',
     '### `status` — годность лида (rules-v1)',
     '',
-    'Ставят **правила** после policy. LLM статус не повышает.',
+    'Ставят **правила** после policy. Mock-LLM только советует в `decision.llmOutput` и статус против правил не повышает. Невалидный JSON / timeout / 429 / injection в ответе модели → `MANUAL_REVIEW`, не QUALIFY. Основание `processingBasis` модель не пишет.',
     '',
     '| Значение | Смысл | Письмо |',
     '| --- | --- | --- |',
@@ -123,7 +123,7 @@ export const openApiTags = [
   { name: 'imports', description: 'Склад сырья RawLeadRecord. Смотреть processingBasis, optOut, comment/tags. Карточки отсюда ещё не появляются.' },
   { name: 'cases', description: 'Дедуп: Person, Company, карточка LeadCase. На карточке processingBasis уже «худшее» из raw; guard и status — отдельные поля.' },
   { name: 'policy', description: 'Можно ли действовать. Три оси: processingBasis, optOut/suppression, injection → deliveryGuard CLEAR|BLOCKED.' },
-  { name: 'rules', description: 'Квалификация rules-v1: QUALIFY / REJECT / MANUAL_REVIEW + DecisionRecord.' },
+  { name: 'rules', description: 'Квалификация rules-v1: QUALIFY / REJECT / MANUAL_REVIEW + DecisionRecord. Следом mock-LLM пишет llmOutput.' },
 ]
 
 export const tenantHeaderSchema = {
@@ -134,6 +134,19 @@ export const tenantHeaderSchema = {
       description:
         'Квартира данных (athenai_demo | proshelf_demo). Не логин. Один JWT, другой заголовок → уже другая квартира. Нет/чужой slug → 404 TENANT_ISOLATION.',
       example: 'athenai_demo',
+    },
+  },
+} as const
+
+export const llmFaultHeaderSchema = {
+  type: 'object',
+  properties: {
+    'x-tenant-id': tenantHeaderSchema.properties['x-tenant-id'],
+    'x-llm-fault': {
+      type: 'string',
+      enum: ['invalid_json', 'timeout', '429', 'injection'],
+      description:
+        'Только mock. Нет заголовка — ответ ok. Сбои: invalid_json (не JSON), timeout, 429, injection (модель пытается сменить tenant/канал/CTA/основание). Живого OpenAI нет.',
     },
   },
 } as const
@@ -187,6 +200,14 @@ export const routeDocs = {
     description:
       'JWT + x-tenant-id. 200 только когда параметр пути совпадает с заголовком. Иначе 404 без имени соседа — проверка изоляции, не «не найден».',
   },
+  tenantsBudget: {
+    summary: 'Бюджет токенов mock-LLM этой квартиры',
+    description: [
+      'JWT + x-tenant-id. Путь slug = заголовок, иначе 404 TENANT_ISOLATION.',
+      '',
+      'tokenSpent растёт на каждый вызов mock-модели (250 токенов). spent >= tokenBudget → killSwitchOn, причина budget_exceeded, новых вызовов нет. Соседний tenant не трогаем. Импорт и чтение живы. Ручной POST kill-switch — срез METR-1.',
+    ].join('\n'),
+  },
   importsPost: {
     summary: 'Положить сырьё (JSON или CSV) на склад',
     description: [
@@ -228,7 +249,7 @@ export const routeDocs = {
     description: [
       'Команда, не чтение: создаёт Person / Company / LeadCase. JSON — отчёт сколько собрали, не список дел.',
       '',
-      'Идемпотентно: повтор не удваивает карточки. Сырьё остаётся (raw.leadCaseId). В конце: policy (deliveryGuard), затем rules-v1 (status/score/DecisionRecord). Пустой склад → все нули. Список дел: GET /cases.',
+      'Идемпотентно: повтор не удваивает карточки. Сырьё остаётся (raw.leadCaseId). В конце: policy (deliveryGuard), rules-v1 (status/score/DecisionRecord), затем mock-LLM. Невалидный ответ модели не QUALIFY. Пустой склад → все нули. Список дел: GET /cases.',
     ].join('\n'),
   },
   casesList: {
@@ -248,7 +269,7 @@ export const routeDocs = {
     description: [
       'Карточка + бумажки, из которых склеили (rawRecords[].payload).',
       '',
-      'На каждой бумажке свои processingBasis / optOut / comment. На карточке processingBasis — худшее из них; optOut или injection на любой бумажке блокирует всю карточку. decision.llmOutput пока null.',
+      'На каждой бумажке свои processingBasis / optOut / comment. На карточке processingBasis — худшее из них; optOut или injection на любой бумажке блокирует всю карточку. decision.llmOutput — совет mock-модели (или skipped/error), не basis.',
       '',
       'Чужой x-tenant-id на чужой id → 404 TENANT_ISOLATION, без тела соседа.',
     ].join('\n'),
@@ -276,7 +297,7 @@ export const routeDocs = {
       '3. suppression — почта в GET /suppression этого tenant.',
       '4. unknown_processing_basis — processingBasis UNKNOWN или PROHIBITED, либо нет evidence refs.',
       '',
-      'CONSENT без этих стоп-сигналов → CLEAR. Это не QUALIFY: статус ставит rules-v1 следом. processingBasis на карточку — худшее из raw, LLM не участвует.',
+      'CONSENT без этих стоп-сигналов → CLEAR. Это не QUALIFY: статус ставит rules-v1 следом, затем mock-LLM. processingBasis на карточку — худшее из raw, LLM не участвует.',
       '',
       'Resolve уже вызывает policy+rules в конце. Эта ручка нужна, если стоп-список загрузили после resolve.',
     ].join('\n'),
@@ -284,7 +305,7 @@ export const routeDocs = {
   casesApplyRules: {
     summary: 'Прогнать rules-v1 по всем карточкам квартиры',
     description: [
-      'Ставит QUALIFY / REJECT / MANUAL_REVIEW, score, confidence и пишет DecisionRecord. LLM не зовёт (llmOutput = null).',
+      'Ставит QUALIFY / REJECT / MANUAL_REVIEW, score, confidence и пишет DecisionRecord. Затем mock-LLM (заголовок x-llm-fault для сбоев). BLOCKED карточки модель не зовут (llmOutput skipped).',
       '',
       'Не импортирует и не склеивает. Resolve уже вызывает это после policy. Нужно, если правила накатили после ручного apply-policy.',
     ].join('\n'),
@@ -294,7 +315,7 @@ export const routeDocs = {
     description: [
       'Тот же движок, что POST /cases/apply-rules, но на один id. Body не нужен. Чужой id / чужой tenant → 404 TENANT_ISOLATION.',
       '',
-      'Не повышает статус против BLOCKED. Неполная запись не QUALIFY. Нецелевой ICP → REJECT + CLEAR. Конфликт Person×Company → review + BLOCKED, reason пустой. Слот LLM пустой.',
+      'Не повышает статус против BLOCKED. Невалидный mock-LLM / timeout / 429 / injection в ответе → MANUAL_REVIEW, не QUALIFY. processingBasis модель не пишет. Нецелевой ICP → REJECT + CLEAR. Слот decision.llmOutput заполняется.',
     ].join('\n'),
   },
 } as const satisfies Record<string, RouteDoc>
@@ -377,7 +398,7 @@ export const openApiSchemas = {
     type: 'string' as const,
     enum: ['QUALIFY', 'REJECT', 'MANUAL_REVIEW'],
     description:
-      'Годность по rules-v1. QUALIFY — можно готовить черновик, если ещё CLEAR. REJECT — нецелевой, контакт не запрещён (CLEAR). MANUAL_REVIEW — человеку, в том числе все BLOCKED. Письмо только QUALIFY + CLEAR.',
+      'Годность по rules-v1. QUALIFY — можно готовить черновик, если ещё CLEAR. REJECT — нецелевой, контакт не запрещён (CLEAR). MANUAL_REVIEW — человеку, в том числе все BLOCKED и сбой mock-LLM. Письмо только QUALIFY + CLEAR. LLM статус не повышает и не ставит processingBasis.',
   },
 }
 

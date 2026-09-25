@@ -1,3 +1,4 @@
+import { DEFAULT_LLM_TOKEN_BUDGET } from '@app/shared'
 import { prisma } from './prisma.js'
 
 export async function wipeLeadGraph() {
@@ -13,4 +14,12 @@ export async function wipeLeadGraph() {
   await prisma.company.deleteMany()
   await prisma.person.deleteMany()
   await prisma.rawLeadRecord.deleteMany()
+  await prisma.tenant.updateMany({
+    data: {
+      llmTokenBudget: DEFAULT_LLM_TOKEN_BUDGET,
+      llmTokenSpent: 0,
+      killSwitchOn: false,
+      killSwitchReason: null,
+    },
+  })
 }
