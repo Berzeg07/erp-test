@@ -90,3 +90,15 @@ export {
   type SuppressionEntry,
   type SuppressionList,
 } from './policy.js'
+export {
+  RULES_POLICY_VERSION,
+  DecisionRecordPublicSchema,
+  RulesApplyResultSchema,
+  RulesInputSchema,
+  RulesOutputSchema,
+  evaluateRulesV1,
+  type DecisionRecordPublic,
+  type RulesApplyResult,
+  type RulesInput,
+  type RulesOutput,
+} from './rules.js'

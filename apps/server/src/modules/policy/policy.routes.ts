@@ -3,6 +3,7 @@ import { PolicyApplyResultSchema, SuppressionListSchema } from '@app/shared'
 import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
 import { resolveTenant } from '../../lib/tenant.js'
 import { applyPolicy, listSuppression, upsertSuppressionFromFixtures } from './policy.service.js'
+import { applyRules } from '../rules/rules.service.js'
 
 export async function policyRoutes(app: FastifyInstance) {
   app.post(
@@ -45,7 +46,11 @@ export async function policyRoutes(app: FastifyInstance) {
           headers: tenantHeaderSchema,
         },
       },
-      async (request) => PolicyApplyResultSchema.parse(await applyPolicy(request.tenant!)),
+      async (request) => {
+        const result = await applyPolicy(request.tenant!)
+        await applyRules(request.tenant!)
+        return PolicyApplyResultSchema.parse(result)
+      },
     )
   })
 }

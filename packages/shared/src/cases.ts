@@ -6,6 +6,7 @@ import {
   RawLeadRecordSchema,
   TenantSlugSchema,
 } from './fixtures.js'
+import { DecisionRecordPublicSchema } from './rules.js'
 
 export const MergeBySchema = z.enum(['external_id', 'domain', 'company_name', 'none'])
 export type MergeBy = z.infer<typeof MergeBySchema>
@@ -55,6 +56,9 @@ export const LeadCaseSummarySchema = z.object({
     }),
   ),
   sourcePurpose: z.string(),
+  score: z.number().int(),
+  confidence: z.number(),
+  policyVersion: z.literal('rules-v1'),
   mergeBy: MergeBySchema,
   conflicts: z.array(z.string()),
   reasons: z.array(z.string()),
@@ -72,6 +76,7 @@ export const LeadCaseListSchema = z.object({
 export type LeadCaseList = z.infer<typeof LeadCaseListSchema>
 
 export const LeadCaseDetailSchema = LeadCaseSummarySchema.extend({
+  decision: DecisionRecordPublicSchema.nullable(),
   rawRecords: z.array(
     z.object({
       id: z.string().uuid(),

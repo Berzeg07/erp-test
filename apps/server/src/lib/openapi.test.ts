@@ -21,6 +21,8 @@ const documented: Array<{ method: string; path: string; doc: keyof typeof routeD
   { method: 'post', path: '/suppression/from-fixtures', doc: 'suppressionFromFixtures' },
   { method: 'get', path: '/suppression', doc: 'suppressionList' },
   { method: 'post', path: '/cases/apply-policy', doc: 'casesApplyPolicy' },
+  { method: 'post', path: '/cases/apply-rules', doc: 'casesApplyRules' },
+  { method: 'post', path: '/cases/{id}/qualify', doc: 'casesQualify' },
 ]
 
 describe('OpenAPI operation docs', () => {
@@ -30,11 +32,20 @@ describe('OpenAPI operation docs', () => {
     expect(spec.statusCode).toBe(200)
     const body = spec.json() as {
       info?: { description?: string }
+      components?: { schemas?: Record<string, { description?: string }> }
       paths?: Record<string, Record<string, { summary?: string; description?: string }>>
     }
 
-    expect(body.info?.description).toContain('x-tenant-id')
-    expect(body.info?.description).toContain('Authorize')
+    expect(body.info?.description).toContain('## Три разные оси на сырье')
+    expect(body.info?.description).toContain('| `CONSENT` |')
+    expect(body.info?.description).toContain('| Ira Sokolova / Nimbus Apps |')
+    expect(body.info?.description).toContain('### `deliveryGuard`')
+    expect(body.info?.description).toContain('| `QUALIFY` |')
+    expect(body.info?.description).toContain('| `REJECT` |')
+    expect(body.info?.description).toContain('| `MANUAL_REVIEW` |')
+    expect(body.components?.schemas?.ProcessingBasis?.description).toContain('CONSENT')
+    expect(body.components?.schemas?.OptOut?.description).toContain('optOut')
+    expect(body.components?.schemas?.PromptInjection?.description).toContain('prompt_injection')
 
     for (const item of documented) {
       const operation = body.paths?.[item.path]?.[item.method]

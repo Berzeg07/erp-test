@@ -32,8 +32,8 @@
 | **IMP-1** | Импорт CSV / JSON / mock API | ✅ | [TZ — конвейер](../TZ.md#конвейер) |
 | **DEDUP-1** | Person, Company, связь, LeadCase, дедуп | ✅ | [TZ — дедуп](../TZ.md#правила-дедупа-объяснимые) |
 | **POLICY-1** | basis, guard, suppression, injection | ✅ | [TZ — ответы 1 и 4](../TZ.md#зафиксированные-ответы-hr) |
-| **RULE-1** | Правила `rules-v1` + DecisionRecord | ⬜ **текущий** | [TZ — квалификация](../TZ.md#правила-квалификации-детерминированные-policy-rules-v1) |
-| **LLM-1** | Mock LLM + схема + бюджет токенов | ⬜ | [TZ — LLM](../TZ.md#llm-adapter-p1) |
+| **RULE-1** | Правила `rules-v1` + DecisionRecord | ✅ | [TZ — квалификация](../TZ.md#правила-квалификации-детерминированные-policy-rules-v1) |
+| **LLM-1** | Mock LLM + схема + бюджет токенов | ⬜ **текущий** | [TZ — LLM](../TZ.md#llm-adapter-p1) |
 | **DRAFT-1** | Draft + approval версии | ⬜ | [TZ — конвейер п.8–9](../TZ.md#конвейер) |
 | **OUT-1** | Outbox mock-send идемпотентный | ⬜ | тот же п.10 |
 | **REPLY-1** | Mock replies + задачи; payment/meeting события | ⬜ | [TZ — ответы](../TZ.md#mock-ответы-и-задачи) |
@@ -152,6 +152,8 @@
 - LLM ещё можно не звать (слот в DecisionRecord пустой).
 
 **Что нет:** адаптер модели.
+
+**Статус:** ✅ 2026-09-25. `evaluateRulesV1` (`rules-v1`): QUALIFY / REJECT / MANUAL_REVIEW, score, confidence. `DecisionRecord` на карточку (llmOutput пустой). Конфликт Person×Company → review + BLOCKED. `name_only_overlap` → review без блока. Неполная запись не QUALIFY. Нецелевой ICP → REJECT + CLEAR. Guard BLOCKED правила не повышают. Прогон после policy в `POST /cases/resolve` и `POST /cases/apply-policy`; отдельно `POST /cases/apply-rules` и `POST /cases/:id/qualify`.
 
 ---
 

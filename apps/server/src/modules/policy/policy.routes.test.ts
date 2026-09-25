@@ -164,11 +164,11 @@ describe.skipIf(!hasDb)('POLICY-1 delivery guard', () => {
     await app.close()
   })
 
-  it('keeps a documented-consent case CLEAR (no QUALIFY yet)', async () => {
+  it('keeps a documented-consent case CLEAR and QUALIFY', async () => {
     const app = await withApp()
     const listed = await importResolve(app, 'athenai_demo', ['a-dup-ext-1'])
     expect(listed.cases[0]).toMatchObject({
-      status: 'MANUAL_REVIEW',
+      status: 'QUALIFY',
       deliveryGuard: 'CLEAR',
       deliveryGuardReason: null,
       processingBasis: 'CONSENT',

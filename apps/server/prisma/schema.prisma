@@ -53,6 +53,7 @@ model Tenant {
   companyContacts CompanyContact[]
   leadCases      LeadCase[]
   suppressionEntries SuppressionEntry[]
+  decisionRecords DecisionRecord[]
 }
 
 enum LeadCaseStatus {
@@ -166,12 +167,16 @@ model LeadCase {
   processingBasisEvidenceRefs Json @default("[]")
   sourcePurpose    String           @default("")
   mergeBy          String           @default("none")
+  score            Int              @default(0)
+  confidence       Float            @default(0)
+  policyVersion    String           @default("rules-v1")
   conflicts        Json
   reasons          Json
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  rawRecords RawLeadRecord[]
+  rawRecords       RawLeadRecord[]
+  decisionRecord   DecisionRecord?
 
   @@unique([tenantId, personId, companyId])
   @@index([tenantId])
@@ -205,5 +210,27 @@ model SuppressionEntry {
   updatedAt       DateTime @updatedAt
 
   @@unique([tenantId, emailNormalized])
+  @@index([tenantId])
+}
+
+model DecisionRecord {
+  id                  String         @id @default(uuid())
+  tenantId            String
+  tenant              Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId          String         @unique
+  leadCase            LeadCase       @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  policyVersion       String
+  status              LeadCaseStatus
+  deliveryGuard       DeliveryGuard
+  deliveryGuardReason String?
+  score               Int
+  confidence          Float
+  reasons             Json
+  evidenceRefs        Json
+  ruleOutput          Json
+  llmOutput           Json?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
   @@index([tenantId])
 }

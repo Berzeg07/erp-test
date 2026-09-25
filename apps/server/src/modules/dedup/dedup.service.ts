@@ -12,6 +12,7 @@ import type { Prisma } from '@prisma/client'
 import type { RequestTenant } from '../../lib/tenant.js'
 import { prisma } from '../../lib/prisma.js'
 import { applyPolicy } from '../policy/policy.service.js'
+import { applyRules } from '../rules/rules.service.js'
 import { normalizeCompanyName, normalizeDomain, normalizeEmail, strongerMergeBy } from './normalize.js'
 
 function asStringArray(value: Prisma.JsonValue): string[] {
@@ -206,6 +207,7 @@ export async function resolveLeadCases(tenant: RequestTenant): Promise<DedupReso
 
   await applyConflicts(tenant.id)
   await applyPolicy(tenant)
+  await applyRules(tenant)
 
   const [cases, persons, companies] = await Promise.all([
     prisma.leadCase.count({ where: { tenantId: tenant.id } }),
@@ -304,6 +306,9 @@ function toSummary(item: {
   processingBasisEvidenceRefs: Prisma.JsonValue
   sourcePurpose: string
   mergeBy: string
+  score: number
+  confidence: number
+  policyVersion: string
   conflicts: Prisma.JsonValue
   reasons: Prisma.JsonValue
   person: { id: string; emailNormalized: string | null; displayName: string | null }
@@ -318,6 +323,9 @@ function toSummary(item: {
     processingBasis: item.processingBasis,
     processingBasisEvidenceRefs: asEvidenceRefs(item.processingBasisEvidenceRefs),
     sourcePurpose: item.sourcePurpose,
+    score: item.score,
+    confidence: item.confidence,
+    policyVersion: 'rules-v1' as const,
     mergeBy: item.mergeBy,
     conflicts: asStringArray(item.conflicts),
     reasons: asStringArray(item.reasons),
@@ -339,7 +347,35 @@ const caseInclude = {
   person: true,
   company: { include: { domains: true } },
   rawRecords: true,
+  decisionRecord: true,
 } as const
+
+function toDecision(
+  row: {
+    id: string
+    policyVersion: string
+    status: 'QUALIFY' | 'REJECT' | 'MANUAL_REVIEW'
+    deliveryGuard: 'CLEAR' | 'BLOCKED'
+    deliveryGuardReason: string | null
+    score: number
+    confidence: number
+    reasons: Prisma.JsonValue
+    llmOutput: Prisma.JsonValue
+  } | null,
+) {
+  if (!row) return null
+  return {
+    id: row.id,
+    policyVersion: 'rules-v1' as const,
+    status: row.status,
+    deliveryGuard: row.deliveryGuard,
+    deliveryGuardReason: row.deliveryGuardReason,
+    score: row.score,
+    confidence: row.confidence,
+    reasons: asStringArray(row.reasons),
+    llmOutput: null,
+  }
+}
 
 export async function listLeadCases(tenant: RequestTenant): Promise<LeadCaseList> {
   const rows = await prisma.leadCase.findMany({
@@ -367,6 +403,7 @@ export async function getLeadCase(
 
   return LeadCaseDetailSchema.parse({
     ...toSummary(row),
+    decision: toDecision(row.decisionRecord),
     rawRecords: row.rawRecords.map((raw) => ({
       id: raw.id,
       source: raw.source,

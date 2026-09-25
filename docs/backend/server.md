@@ -25,11 +25,13 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | POST | `/cases/resolve` | JWT + `X-Tenant-Id` | Person/Company/LeadCase из raw, идемпотентно |
 | GET | `/cases` | JWT + `X-Tenant-Id` | список кейсов текущего tenant |
 | GET | `/cases/:id` | JWT + `X-Tenant-Id` | карточка + raw refs; чужой tenant → 404 |
-| POST | `/cases/apply-policy` | JWT + `X-Tenant-Id` | guard: opt-out / suppression / injection / basis |
+| POST | `/cases/apply-policy` | JWT + `X-Tenant-Id` | guard, затем rules-v1 |
+| POST | `/cases/apply-rules` | JWT + `X-Tenant-Id` | QUALIFY/REJECT/REVIEW + DecisionRecord |
+| POST | `/cases/:id/qualify` | JWT + `X-Tenant-Id` | то же на одну карточку; чужой id → 404 |
 | POST | `/suppression/from-fixtures` | JWT | загрузить `fixtures/suppression.json` |
 | GET | `/suppression` | JWT + `X-Tenant-Id` | стоп-список текущего tenant |
 
-`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. QUALIFY ещё не ставим (RULE-1). Resolve в конце сам зовёт policy.
+`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. Чистый годный: `QUALIFY` + `CLEAR`. Resolve в конце: policy, затем rules-v1. LLM-слот DecisionRecord пока пустой.
 
 Дедуп внутри tenant: один `externalId` (любой source) или один домен → одна Company. Нормализованное имя без домена/id **не** склеивает фирмы. LeadCase = Person × Company; один email в двух фирмах → два кейса. Сырьё не удаляется (`RawLeadRecord.leadCaseId`).
 
@@ -53,6 +55,7 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | `modules/imports` | CSV/JSON/mock-source → `RawLeadRecord` |
 | `modules/dedup` | нормализация и склейка → `LeadCase` |
 | `modules/policy` | deliveryGuard, suppression, injection |
+| `modules/rules` | rules-v1, DecisionRecord, QUALIFY/REJECT |
 | `lib/tenant.ts` | `X-Tenant-Id`, 404 `TENANT_ISOLATION` |
 | `lib/prisma.ts` | PrismaClient |
 | `lib/refresh-token.ts` | create / rotate / revoke |

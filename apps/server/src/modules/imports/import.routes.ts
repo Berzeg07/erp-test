@@ -8,7 +8,7 @@ import {
   TenantSlugSchema,
 } from '@app/shared'
 import { ZodError } from 'zod'
-import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
+import { importLeadItemSchema, routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
 import { resolveTenant } from '../../lib/tenant.js'
 import { parseCsvLeads } from './import.csv.js'
 import { mockSourceLeadsForTenant } from './import.fixtures.js'
@@ -63,8 +63,8 @@ const importBodySchema = {
   properties: {
     leads: {
       type: 'array',
-      description: 'JSON rows (same shape as fixtures/leads.json)',
-      items: { type: 'object', additionalProperties: true },
+      description: 'JSON-строки как fixtures/leads.json. Поля processingBasis, optOut, comment, tags — три разные оси, см. Models и описание страницы /docs.',
+      items: importLeadItemSchema,
     },
     csv: {
       type: 'string',
