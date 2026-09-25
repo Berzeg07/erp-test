@@ -206,6 +206,7 @@ export const openApiTags = [
   { name: 'events', description: 'Payment и meeting только отдельным POST. Не выводятся из ответа positive.' },
   { name: 'crm', description: 'Имитация CRM: upsert четырёх сущностей, сбой 429/500, DLQ, reprocess тем же ключом. Живого HubSpot нет.' },
   { name: 'metrics', description: 'GET /metrics с synthetic:true. POST /kill-switch глушит LLM и send этой квартиры, импорт жив, сосед нет.' },
+  { name: 'demo', description: 'Сброс воронки текущей квартиры для немого скринкаста. Соседа не трогает. JWT + x-tenant-id.' },
 ]
 
 export const tenantHeaderSchema = {
@@ -583,6 +584,16 @@ export const routeDocs = {
       'Ответ — как GET /tenants/{slug}/budget. Send при ON → 409 KILL_SWITCH_ACTIVE. Если токены уже кончились (budget_exceeded), выключить нельзя: останется ON.',
       '',
       'Соседний tenant не трогаем. Чужой/пустой header → 404 TENANT_ISOLATION.',
+    ].join('\n'),
+  },
+  demoReset: {
+    summary: 'Очистить воронку этой квартиры до нулей',
+    description: [
+      'JWT + x-tenant-id. Для съёмки: обзор снова imported/unique/blocked = 0, kill-switch OFF, бюджет mock-LLM сброшен.',
+      '',
+      'Трогает только текущую квартиру: raw, карточки, drafts, outbox, replies, mock CRM, DLQ. Suppression и соседний tenant остаются. Пользователей не удаляет.',
+      '',
+      'Ответ — как GET /metrics после пустой воронки. Чужой/пустой header → 404 TENANT_ISOLATION.',
     ].join('\n'),
   },
 } as const satisfies Record<string, RouteDoc>

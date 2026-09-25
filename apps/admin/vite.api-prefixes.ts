@@ -16,4 +16,5 @@ export const WEB_API_PROXY_PREFIXES = [
   '/metrics',
   '/kill-switch',
   '/suppression',
+  '/demo',
 ] as const

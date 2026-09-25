@@ -30,6 +30,7 @@ async function submit(): Promise<void> {
   <main class="login-page">
     <v-card class="login-card" elevation="8">
       <v-card-title class="text-h5">{{ title }}</v-card-title>
+      <v-card-subtitle>SYNTHETIC · admin@app.local / admin12345</v-card-subtitle>
       <v-card-text>
         <v-form @submit.prevent="submit">
           <v-text-field

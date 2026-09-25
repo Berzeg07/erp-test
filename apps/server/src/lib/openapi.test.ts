@@ -47,6 +47,7 @@ const documented: Array<{ method: string; path: string; doc: keyof typeof routeD
   { method: 'post', path: '/dlq/{id}/reprocess', doc: 'dlqReprocess' },
   { method: 'get', path: '/metrics', doc: 'metricsGet' },
   { method: 'post', path: '/kill-switch', doc: 'killSwitchPost' },
+  { method: 'post', path: '/demo/reset', doc: 'demoReset' },
 ]
 
 describe('OpenAPI operation docs', () => {

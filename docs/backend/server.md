@@ -52,6 +52,7 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | POST | `/dlq/:id/reprocess` | JWT + `X-Tenant-Id` | повтор доставки тем же ключом |
 | GET | `/metrics` | JWT + `X-Tenant-Id` | синтетические цифры воронки |
 | POST | `/kill-switch` | JWT + `X-Tenant-Id` | рубильник: глушит LLM и send |
+| POST | `/demo/reset` | JWT + `X-Tenant-Id` | сброс воронки текущей квартиры до нулей |
 | POST | `/suppression/from-fixtures` | JWT | загрузить `fixtures/suppression.json` |
 | GET | `/suppression` | JWT + `X-Tenant-Id` | стоп-список текущего tenant |
 
@@ -86,6 +87,7 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | `modules/replies` | mock-ответы, задачи менеджеру, payment/meeting события |
 | `modules/crm` | mock CRM upsert, 429/5xx, DLQ, reprocess |
 | `modules/metrics` | `GET /metrics`, ручной `POST /kill-switch` |
+| `modules/demo` | `POST /demo/reset` — очистка воронки текущей квартиры |
 | `lib/tenant.ts` | `X-Tenant-Id`, 404 `TENANT_ISOLATION` |
 | `lib/prisma.ts` | PrismaClient |
 | `lib/refresh-token.ts` | create / rotate / revoke |

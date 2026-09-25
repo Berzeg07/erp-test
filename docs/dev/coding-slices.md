@@ -39,8 +39,8 @@
 | **REPLY-1** | Mock replies + задачи; payment/meeting события | ✅ | [TZ — ответы](../TZ.md#mock-ответы-и-задачи) |
 | **CRM-1** | Upsert CRM, 429/5xx, DLQ, reprocess | ✅ | [TZ — CRM](../TZ.md#mock-crm) |
 | **METR-1** | Метрики SYNTHETIC + kill-switch | ✅ | [TZ — метрики](../TZ.md#метрики-все-с-флагом-synthetic-true) |
-| **UI-1** | Немая демо-панель Vuetify под скринкаст | ⬜ **текущий** после METR-1 | [screencast.md](./screencast.md), [TZ — UI](../TZ.md#минимальный-ui-vuetify-appsadmin) |
-| **TEST-1** | Добить ≥18 обязательных тестов | ⬜ можно параллельно с UI-1 | [TZ — тесты](../TZ.md#автотесты-минимум-18) |
+| **UI-1** | Немая демо-панель Vuetify под скринкаст | ✅ | [screencast.md](./screencast.md), [TZ — UI](../TZ.md#минимальный-ui-vuetify-appsadmin) |
+| **TEST-1** | Добить ≥18 обязательных тестов | ⬜ **текущий** | [TZ — тесты](../TZ.md#автотесты-минимум-18) |
 | **DOCS-1** | README, threat model, COMMERCIAL, AI_USAGE, скринкаст | ⬜ последний | [TZ — сдача](../TZ.md#сдача) |
 
 ---
@@ -262,8 +262,11 @@
 - Метрики: все поля ТЗ + SYNTHETIC.
 - Kill-switch: ON → отказ на том же экране; импорт всё ещё ок; смена tenant — сосед жив.
 - `X-Tenant-Id` в `http.ts`; префиксы в `vite.api-prefixes.ts`.
+- Техническое: сброс воронки текущей квартиры (`POST /demo/reset`) → нули в шапке, сосед жив.
 
 **Что нет:** `apps/web`, канбан, графики, клон CRM, анимации «ради красоты», страница настроек. Login из стартера оставить.
+
+Статус: ✅ админка под раскадровку [screencast.md](./screencast.md). Шапка SYNTHETIC/tenant/kill-switch/числа; экраны импорт, кейсы, карточка (draft/send/reply/CRM), метрики; техсброс квартиры. `X-Tenant-Id` в `http.ts`.
 
 ---
 

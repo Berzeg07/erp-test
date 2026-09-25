@@ -6,8 +6,24 @@ import {
   readToken,
   saveTokens,
 } from '@/shared/config/auth'
+import { readTenantSlug } from '@/shared/config/tenant'
 
 let refreshRequest: Promise<boolean> | null = null
+
+export class ApiError extends Error {
+  constructor(
+    readonly code: string,
+    readonly statusCode: number,
+  ) {
+    super(`${statusCode} ${code}`)
+    this.name = 'ApiError'
+  }
+}
+
+export function applyTenantHeader(headers: Headers): void {
+  if (headers.has('X-Tenant-Id')) return
+  headers.set('X-Tenant-Id', readTenantSlug())
+}
 
 async function refreshSession(): Promise<boolean> {
   const refreshToken = readRefreshToken()
@@ -38,6 +54,7 @@ export async function apiFetch<T>(
   const token = readToken()
 
   if (token) headers.set('Authorization', `Bearer ${token}`)
+  applyTenantHeader(headers)
   if (init.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
@@ -53,11 +70,11 @@ export async function apiFetch<T>(
 
   if (!response.ok) {
     const body = await response.json().catch(() => null)
-    const message =
+    const code =
       body && typeof body === 'object' && 'error' in body
         ? String(body.error)
-        : `Request failed with status ${response.status}`
-    throw new Error(message)
+        : `HTTP_${response.status}`
+    throw new ApiError(code, response.status)
   }
 
   if (response.status === 204) return undefined as T

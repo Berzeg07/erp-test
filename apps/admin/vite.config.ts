@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import { WEB_API_PROXY_PREFIXES } from './vite.api-prefixes'
 
 const proxy = Object.fromEntries(
@@ -30,6 +30,9 @@ export default defineConfig({
             : `@use "@/assets/scss/index.scss" as *;\n${source}`,
       },
     },
+  },
+  test: {
+    environment: 'node',
   },
   server: {
     port: 5283,

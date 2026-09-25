@@ -50,4 +50,8 @@ describe('admin API proxy prefixes', () => {
   it('proxies suppression routes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/suppression')
   })
+
+  it('proxies demo reset', () => {
+    expect(WEB_API_PROXY_PREFIXES).toContain('/demo')
+  })
 })
