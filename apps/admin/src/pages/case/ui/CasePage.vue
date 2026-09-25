@@ -21,6 +21,7 @@ import {
   listTasks,
   patchDraft,
   postReply,
+  isSimulatedCrmFault,
   qualifyCase,
   reprocessDlq,
   sendDraft,
@@ -28,6 +29,7 @@ import {
   syncCrmFault,
 } from '@/entities/leads/api'
 import { isDuplicateCase, isInjectionCase } from '@/entities/leads/model/case-filters'
+import { qualifyLlmMessage, type QualifyLlmAlert } from '@/entities/leads/model/qualify-copy'
 import { useWorkspaceStore } from '@/entities/workspace'
 import { SceneAlert } from '@/shared/ui/scene-alert'
 
@@ -48,6 +50,10 @@ const draft = ref<DraftVersionPublic | null>(null)
 const draftText = ref('')
 const approvalRevoked = ref(false)
 const sendResult = ref<OutboxSendResult | null>(null)
+const crmNote = ref('')
+const crmBusy = ref(false)
+const qualifyNote = ref<QualifyLlmAlert | null>(null)
+const qualifyBusy = ref(false)
 const reply = ref<InboundReplyPublic | null>(null)
 const tasks = ref<ManagerTaskPublic[]>([])
 const payments = ref(0)
@@ -129,6 +135,7 @@ onMounted(() => {
 })
 
 watch([caseId, () => workspace.tenantSlug], () => {
+  qualifyNote.value = null
   void load()
 })
 
@@ -143,9 +150,24 @@ async function run(fn: () => Promise<void>): Promise<void> {
 }
 
 function qualify(): void {
-  void run(async () => {
-    detail.value = await qualifyCase(caseId.value)
-  })
+  void (async () => {
+    actionError.value = ''
+    qualifyNote.value = null
+    qualifyBusy.value = true
+    try {
+      const row = await qualifyCase(caseId.value)
+      detail.value = row
+      qualifyNote.value = qualifyLlmMessage(row.decision?.llmOutput ?? null)
+      await workspace.refresh()
+    } catch (cause) {
+      qualifyNote.value = {
+        text: cause instanceof Error ? cause.message : 'Qualify / LLM failed',
+        type: 'error',
+      }
+    } finally {
+      qualifyBusy.value = false
+    }
+  })()
 }
 
 function makeDraft(): void {
@@ -193,6 +215,7 @@ function sendReply(type: PlannedReply): void {
 }
 
 function doCrm(): void {
+  crmNote.value = ''
   void run(async () => {
     crm.value = await syncCrm(caseId.value)
     await refreshSide()
@@ -200,13 +223,29 @@ function doCrm(): void {
 }
 
 function doCrmFault(): void {
-  void run(async () => {
+  void (async () => {
+    actionError.value = ''
+    crmNote.value = ''
+    crmBusy.value = true
     try {
       await syncCrmFault(caseId.value, '500')
+      crmNote.value = 'Симуляция не сработала: CRM принял запись'
+    } catch (cause) {
+      if (isSimulatedCrmFault(cause)) {
+        crmNote.value = `${cause.message} — deal не создан, строка в DLQ`
+      } else {
+        actionError.value = cause instanceof Error ? cause.message : 'CRM fault failed'
+      }
     } finally {
-      await refreshSide()
+      try {
+        await refreshSide()
+        await workspace.refresh()
+      } catch {
+        // карточка уже показывает crmNote / actionError
+      }
+      crmBusy.value = false
     }
-  })
+  })()
 }
 
 function doReprocess(id: string): void {
@@ -243,7 +282,19 @@ function doReprocess(id: string): void {
           <p>reasons: {{ detail.reasons.join(', ') || '—' }}</p>
           <p>evidence: {{ detail.processingBasisEvidenceRefs.map((row) => `${row.field} ← ${row.rawId}`).join('; ') || '—' }}</p>
           <p v-if="blockedReason" class="text-error font-weight-bold mt-2">{{ blockedReason }}</p>
-          <v-btn class="mt-3" variant="tonal" @click="qualify">Qualify / LLM</v-btn>
+          <v-btn
+            class="mt-3"
+            variant="tonal"
+            type="button"
+            :loading="qualifyBusy"
+            :disabled="qualifyBusy"
+            @click="qualify"
+          >
+            Qualify / LLM
+          </v-btn>
+          <v-alert v-if="qualifyNote" class="mt-4" :type="qualifyNote.type" prominent>
+            {{ qualifyNote.text }}
+          </v-alert>
         </v-card-text>
       </v-card>
 
@@ -320,9 +371,23 @@ function doReprocess(id: string): void {
         <v-card-title>Mock CRM + DLQ</v-card-title>
         <v-card-text>
           <div class="d-flex flex-wrap ga-2 mb-4">
-            <v-btn color="primary" @click="doCrm">CRM sync</v-btn>
-            <v-btn color="error" variant="tonal" @click="doCrmFault">Симулировать CRM 500</v-btn>
+            <v-btn color="primary" type="button" :loading="crmBusy" :disabled="crmBusy" @click="doCrm">
+              CRM sync
+            </v-btn>
+            <v-btn
+              color="error"
+              variant="tonal"
+              type="button"
+              :loading="crmBusy"
+              :disabled="crmBusy"
+              @click="doCrmFault"
+            >
+              Симулировать CRM 500
+            </v-btn>
           </div>
+          <v-alert v-if="crmNote" class="mb-4" type="warning" prominent>
+            {{ crmNote }}
+          </v-alert>
           <template v-if="crm">
             <p>company {{ crm.companyId }}</p>
             <p>contact {{ crm.contactId }}</p>

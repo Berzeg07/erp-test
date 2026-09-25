@@ -526,7 +526,7 @@ export const routeDocs = {
       '',
       'Повтор без сбоя: те же четыре id, idempotent=true. Чужой id → 404 TENANT_ISOLATION.',
       '',
-      'Сбой: header x-crm-fault (или query) = 429 | 500. Три попытки в этом запросе → GET /dlq, CRM пуст, ответ 429 CRM_429 или 502 CRM_5XX. Уже доставленное повтор со сбоем не откатывает.',
+      'Сбой: header x-crm-fault или query fault = 429 | 500. Три попытки в этом запросе → GET /dlq, CRM пуст, ответ 429 CRM_429 или 502 CRM_5XX. Уже доставленное повтор со сбоем не откатывает.',
     ].join('\n'),
   },
   crmCompanies: {

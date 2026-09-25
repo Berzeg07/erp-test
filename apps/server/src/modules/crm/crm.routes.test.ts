@@ -231,6 +231,28 @@ describe.skipIf(!hasDb)('CRM-1 mock upsert, faults and DLQ', () => {
     await app.close()
   })
 
+  it('parks a 5xx fault from query ?fault=500', async () => {
+    const app = await withApp()
+    const caseId = await importIra(app)
+
+    const failed = await app.inject({
+      method: 'POST',
+      url: '/crm/sync?fault=500',
+      headers: authHeaders('athenai_demo'),
+      payload: { leadCaseId: caseId },
+    })
+    expect(failed.statusCode).toBe(502)
+    expect(failed.json()).toEqual({ error: 'CRM_5XX' })
+
+    const dlq = await app.inject({
+      method: 'GET',
+      url: '/dlq',
+      headers: authHeaders('athenai_demo'),
+    })
+    expect((dlq.json() as DlqList).items[0]?.fault).toBe('500')
+    await app.close()
+  })
+
   it('reprocesses a DLQ item to the same deal id and clears the queue', async () => {
     const app = await withApp()
     const caseId = await importIra(app)

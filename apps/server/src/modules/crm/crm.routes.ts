@@ -47,6 +47,16 @@ export async function crmRoutes(app: FastifyInstance) {
           ...routeDocs.crmSync,
           security: [{ bearerAuth: [] }],
           headers: crmFaultHeaderSchema,
+          querystring: {
+            type: 'object',
+            properties: {
+              fault: {
+                type: 'string',
+                enum: ['429', '500'],
+                description: 'То же, что x-crm-fault; удобно для UI через прокси',
+              },
+            },
+          },
           body: {
             type: 'object',
             required: ['leadCaseId'],

@@ -17,7 +17,7 @@ import type {
 } from '@app/shared'
 import { CRM_FAULT_HEADER, FixtureBundleSchema } from '@app/shared'
 import fixtureBundle from '../../../../../fixtures/leads.json'
-import { apiFetch } from '@/shared/api/http'
+import { ApiError, apiFetch } from '@/shared/api/http'
 import { readTenantSlug } from '@/shared/config/tenant'
 
 const fixtureLeads = FixtureBundleSchema.parse(fixtureBundle).leads
@@ -120,15 +120,23 @@ export function listPayments(): Promise<{ payments: PaymentEventPublic[] }> {
   return apiFetch('/events/payments')
 }
 
+export function crmSyncUrl(fault?: '429' | '500'): string {
+  return fault ? `/crm/sync?fault=${fault}` : '/crm/sync'
+}
+
+export function isSimulatedCrmFault(error: unknown): error is ApiError {
+  return error instanceof ApiError && (error.code === 'CRM_5XX' || error.code === 'CRM_429')
+}
+
 export function syncCrm(leadCaseId: string): Promise<CrmSnapshot> {
-  return apiFetch<CrmSnapshot>('/crm/sync', {
+  return apiFetch<CrmSnapshot>(crmSyncUrl(), {
     method: 'POST',
     body: JSON.stringify({ leadCaseId }),
   })
 }
 
 export function syncCrmFault(leadCaseId: string, fault: '429' | '500'): Promise<CrmSnapshot> {
-  return apiFetch<CrmSnapshot>('/crm/sync', {
+  return apiFetch<CrmSnapshot>(crmSyncUrl(fault), {
     method: 'POST',
     headers: { [CRM_FAULT_HEADER]: fault },
     body: JSON.stringify({ leadCaseId }),
