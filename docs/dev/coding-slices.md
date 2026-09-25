@@ -40,8 +40,8 @@
 | **CRM-1** | Upsert CRM, 429/5xx, DLQ, reprocess | ✅ | [TZ — CRM](../TZ.md#mock-crm) |
 | **METR-1** | Метрики SYNTHETIC + kill-switch | ✅ | [TZ — метрики](../TZ.md#метрики-все-с-флагом-synthetic-true) |
 | **UI-1** | Немая демо-панель Vuetify под скринкаст | ✅ | [screencast.md](./screencast.md), [TZ — UI](../TZ.md#минимальный-ui-vuetify-appsadmin) |
-| **TEST-1** | Добить ≥18 обязательных тестов | ⬜ **текущий** | [TZ — тесты](../TZ.md#автотесты-минимум-18) |
-| **DOCS-1** | README, threat model, COMMERCIAL, AI_USAGE, скринкаст | ⬜ последний | [TZ — сдача](../TZ.md#сдача) |
+| **TEST-1** | Добить ≥18 обязательных тестов | ✅ | [TZ — тесты](../TZ.md#автотесты-минимум-18) |
+| **DOCS-1** | README, threat model, COMMERCIAL, AI_USAGE, скринкаст | ⬜ **текущий** | [TZ — сдача](../TZ.md#сдача) |
 
 ---
 
@@ -273,6 +273,8 @@
 ### TEST-1 — закрыть матрицу
 
 Добить все 18 обязательных, если дырки остались по срезам. `pnpm test` зелёный. Audit: `pnpm`/npm audit или аналог — артефакт в DOCS-1.
+
+Статус: ✅ имена 1–18 (+ три «по возможности») в `apps/server/src/modules/matrix/hr-matrix.routes.test.ts`. Срезы IMP–METR уже держали сюжеты; этот файл — сверка с письмом HR.
 
 ---
 
