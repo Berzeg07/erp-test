@@ -9,4 +9,8 @@ describe('admin API proxy prefixes', () => {
   it('proxies OpenAPI UI', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/docs')
   })
+
+  it('proxies tenant routes', () => {
+    expect(WEB_API_PROXY_PREFIXES).toContain('/tenants')
+  })
 })

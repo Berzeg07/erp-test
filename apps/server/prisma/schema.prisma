@@ -39,3 +39,11 @@ model RefreshToken {
   @@index([familyId])
   @@index([expiresAt])
 }
+
+model Tenant {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

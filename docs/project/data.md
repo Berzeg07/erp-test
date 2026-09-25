@@ -10,8 +10,9 @@
 
 | Модель | Назначение |
 | ------ | ---------- |
-| `User` | Аккаунт: `email` (unique), `passwordHash`, `displayName`, `role` |
-| `RefreshToken` | Refresh JWT: `tokenHash` (unique), `familyId`, `expiresAt`, `revokedAt` |
+| `User` | Аккаунт оператора |
+| `RefreshToken` | Refresh JWT |
+| `Tenant` | Клиент продукта (`athenai_demo`, `proshelf_demo`) |
 
 ### Роли
 

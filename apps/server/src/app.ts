@@ -8,6 +8,8 @@ import swaggerUi from '@fastify/swagger-ui'
 import { corsOrigins, env } from './config/env.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { healthRoutes } from './modules/health/health.routes.js'
+import { tenantRoutes } from './modules/tenants/tenant.routes.js'
+import type { RequestTenant } from './lib/tenant.js'
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {
@@ -20,6 +22,10 @@ declare module 'fastify' {
   interface FastifyInstance {
     authenticate: (request: import('fastify').FastifyRequest, reply: import('fastify').FastifyReply) => Promise<void>
   }
+
+  interface FastifyRequest {
+    tenant?: RequestTenant
+  }
 }
 
 type BuildServerOptions = {
@@ -27,8 +33,27 @@ type BuildServerOptions = {
 }
 
 export async function buildServer(options: BuildServerOptions = {}) {
+  const enableLogger = options.logger ?? process.env.NODE_ENV !== 'test'
+
   const app = Fastify({
-    logger: options.logger ?? process.env.NODE_ENV !== 'test',
+    logger: enableLogger
+      ? {
+          serializers: {
+            req(request) {
+              const header = request.headers['x-tenant-id']
+              const fromHeader = Array.isArray(header) ? header[0] : header
+              return {
+                method: request.method,
+                url: request.url,
+                tenant: request.tenant?.slug ?? fromHeader ?? null,
+              }
+            },
+            res(reply) {
+              return { statusCode: reply.statusCode }
+            },
+          },
+        }
+      : false,
   })
 
   if (process.env.NODE_ENV === 'production') {
@@ -77,7 +102,17 @@ export async function buildServer(options: BuildServerOptions = {}) {
       tags: [
         { name: 'health', description: 'Liveness' },
         { name: 'auth', description: 'Operator session' },
+        { name: 'tenants', description: 'Tenant isolation' },
       ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
     },
   })
 
@@ -96,6 +131,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
       timeWindow: env.AUTH_RATE_LIMIT_TIME_WINDOW_MS,
     },
   })
+  await app.register(tenantRoutes)
 
   return app
 }

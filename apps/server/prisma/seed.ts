@@ -23,6 +23,21 @@ async function main() {
   })
 
   console.log(`Seeded admin: ${email}`)
+
+  const tenants = [
+    { slug: 'athenai_demo', name: 'AthenAI Demo' },
+    { slug: 'proshelf_demo', name: 'Proshelf Demo' },
+  ]
+
+  for (const tenant of tenants) {
+    await prisma.tenant.upsert({
+      where: { slug: tenant.slug },
+      update: { name: tenant.name },
+      create: tenant,
+    })
+  }
+
+  console.log(`Seeded tenants: ${tenants.map((item) => item.slug).join(', ')}`)
 }
 
 main()

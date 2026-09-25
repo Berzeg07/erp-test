@@ -27,8 +27,8 @@
 | ID | Срез | Статус | Контракт |
 | -- | ---- | ------ | -------- |
 | **BOOT-0** | Форк стартера, выкинуть лишнее, Swagger, Compose | ✅ | [TZ — стек](../TZ.md#стек-и-каркас) |
-| **TENANT-1** | Tenant + заголовок изоляции | ⬜ **текущий** | [TZ — tenant](../TZ.md#tenant) |
-| **FIX-1** | Фикстуры ≥60 + expected outcomes | ⬜ | [TZ — фикстуры](../TZ.md#фикстуры) |
+| **TENANT-1** | Tenant + заголовок изоляции | ✅ | [TZ — tenant](../TZ.md#tenant) |
+| **FIX-1** | Фикстуры ≥60 + expected outcomes | ⬜ **текущий** | [TZ — фикстуры](../TZ.md#фикстуры) |
 | **IMP-1** | Импорт CSV / JSON / mock API | ⬜ | [TZ — конвейер](../TZ.md#конвейер) |
 | **DEDUP-1** | Person, Company, связь, LeadCase, дедуп | ⬜ | [TZ — дедуп](../TZ.md#правила-дедупа-объяснимые) |
 | **POLICY-1** | basis, guard, suppression, injection | ⬜ | [TZ — ответы 1 и 4](../TZ.md#зафиксированные-ответы-hr) |
@@ -77,6 +77,8 @@
 - Логи: поле `tenant`, без тел чужих записей.
 
 **Что нет:** дедуп, импорт файлов, UI-переключатель (UI-1).
+
+**Статус:** ✅ 2026-09-25. Заголовок `X-Tenant-Id`, 404 `TENANT_ISOLATION`, seed двух demo-tenant.
 
 ---
 

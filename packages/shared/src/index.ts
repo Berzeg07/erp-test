@@ -14,3 +14,9 @@ export {
   type Health,
   type UserRole,
 } from './auth.js'
+export {
+  TenantListSchema,
+  TenantPublicSchema,
+  type TenantList,
+  type TenantPublic,
+} from './tenant.js'

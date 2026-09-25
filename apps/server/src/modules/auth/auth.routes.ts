@@ -60,7 +60,24 @@ export async function authRoutes(app: FastifyInstance, options: AuthRoutesOption
     },
   }
 
-  app.post('/auth/login', authRouteConfig, async (request, reply) => {
+  app.post(
+    '/auth/login',
+    {
+      ...authRouteConfig,
+      schema: {
+        tags: ['auth'],
+        summary: 'Login',
+        body: {
+          type: 'object',
+          required: ['email', 'password'],
+          properties: {
+            email: { type: 'string', format: 'email', default: 'admin@app.local' },
+            password: { type: 'string', minLength: 8, default: 'admin12345' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
     try {
       const body = AuthLoginSchema.parse(request.body)
       const result = await loginUser(body.email, body.password)
@@ -70,7 +87,23 @@ export async function authRoutes(app: FastifyInstance, options: AuthRoutesOption
     }
   })
 
-  app.post('/auth/refresh', authRouteConfig, async (request, reply) => {
+  app.post(
+    '/auth/refresh',
+    {
+      ...authRouteConfig,
+      schema: {
+        tags: ['auth'],
+        summary: 'Refresh session',
+        body: {
+          type: 'object',
+          required: ['refreshToken'],
+          properties: {
+            refreshToken: { type: 'string' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
     try {
       const body = AuthRefreshSchema.parse(request.body)
       const rotated = await rotateRefreshToken(body.refreshToken)
@@ -88,7 +121,17 @@ export async function authRoutes(app: FastifyInstance, options: AuthRoutesOption
     }
   })
 
-  app.post('/auth/logout', { onRequest: [app.authenticate] }, async (request, reply) => {
+  app.post(
+    '/auth/logout',
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['auth'],
+        summary: 'Logout',
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
     try {
       const body = AuthRefreshSchema.partial().parse(request.body ?? {})
       if (body.refreshToken) {
@@ -100,7 +143,17 @@ export async function authRoutes(app: FastifyInstance, options: AuthRoutesOption
     }
   })
 
-  app.get('/auth/me', { onRequest: [app.authenticate] }, async (request) => {
+  app.get(
+    '/auth/me',
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['auth'],
+        summary: 'Current operator',
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    async (request) => {
     const userId = request.user.sub
     return getMe(userId)
   })
