@@ -11,6 +11,7 @@ import {
 import type { Prisma } from '@prisma/client'
 import type { RequestTenant } from '../../lib/tenant.js'
 import { prisma } from '../../lib/prisma.js'
+import { applyPolicy } from '../policy/policy.service.js'
 import { normalizeCompanyName, normalizeDomain, normalizeEmail, strongerMergeBy } from './normalize.js'
 
 function asStringArray(value: Prisma.JsonValue): string[] {
@@ -191,6 +192,7 @@ export async function resolveLeadCases(tenant: RequestTenant): Promise<DedupReso
             companyContactId: contact.id,
             mergeBy,
             conflicts: [],
+            processingBasisEvidenceRefs: [],
             reasons: reasons as Prisma.InputJsonValue,
           },
         })
@@ -203,6 +205,7 @@ export async function resolveLeadCases(tenant: RequestTenant): Promise<DedupReso
   }
 
   await applyConflicts(tenant.id)
+  await applyPolicy(tenant)
 
   const [cases, persons, companies] = await Promise.all([
     prisma.leadCase.count({ where: { tenantId: tenant.id } }),
@@ -274,10 +277,32 @@ async function applyConflicts(tenantId: string) {
   }
 }
 
+function asEvidenceRefs(value: Prisma.JsonValue) {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((item) => {
+    if (!item || typeof item !== 'object' || !('rawId' in item) || !('field' in item)) return []
+    const rawId = (item as { rawId: unknown }).rawId
+    const field = (item as { field: unknown }).field
+    const source = (item as { source?: unknown }).source
+    if (typeof rawId !== 'string' || typeof field !== 'string') return []
+    return [
+      {
+        rawId,
+        field,
+        ...(typeof source === 'string' ? { source } : {}),
+      },
+    ]
+  })
+}
+
 function toSummary(item: {
   id: string
   status: 'QUALIFY' | 'REJECT' | 'MANUAL_REVIEW'
   deliveryGuard: 'CLEAR' | 'BLOCKED'
+  deliveryGuardReason: string | null
+  processingBasis: 'CONSENT' | 'DOCUMENTED_LEGITIMATE_INTEREST' | 'UNKNOWN' | 'PROHIBITED'
+  processingBasisEvidenceRefs: Prisma.JsonValue
+  sourcePurpose: string
   mergeBy: string
   conflicts: Prisma.JsonValue
   reasons: Prisma.JsonValue
@@ -289,6 +314,10 @@ function toSummary(item: {
     id: item.id,
     status: item.status,
     deliveryGuard: item.deliveryGuard,
+    deliveryGuardReason: item.deliveryGuardReason,
+    processingBasis: item.processingBasis,
+    processingBasisEvidenceRefs: asEvidenceRefs(item.processingBasisEvidenceRefs),
+    sourcePurpose: item.sourcePurpose,
     mergeBy: item.mergeBy,
     conflicts: asStringArray(item.conflicts),
     reasons: asStringArray(item.reasons),

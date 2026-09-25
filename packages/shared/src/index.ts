@@ -76,3 +76,17 @@ export {
   type LeadCaseSummary,
   type MergeBy,
 } from './cases.js'
+export {
+  DeliveryGuardReasonSchema,
+  FixtureSuppressionBundleSchema,
+  PolicyApplyResultSchema,
+  ProcessingBasisEvidenceRefSchema,
+  SuppressionEntrySchema,
+  SuppressionListSchema,
+  type DeliveryGuardReason,
+  type FixtureSuppressionBundle,
+  type PolicyApplyResult,
+  type ProcessingBasisEvidenceRef,
+  type SuppressionEntry,
+  type SuppressionList,
+} from './policy.js'

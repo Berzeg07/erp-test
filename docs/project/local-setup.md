@@ -62,3 +62,5 @@ pnpm typecheck
 pnpm test
 pnpm lint
 ```
+
+Серверные тесты ходят в схему Postgres `test` и не затирают `public` (Swagger / `pnpm dev`).

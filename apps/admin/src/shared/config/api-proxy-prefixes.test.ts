@@ -22,4 +22,8 @@ describe('admin API proxy prefixes', () => {
   it('proxies case routes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/cases')
   })
+
+  it('proxies suppression routes', () => {
+    expect(WEB_API_PROXY_PREFIXES).toContain('/suppression')
+  })
 })

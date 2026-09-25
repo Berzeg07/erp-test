@@ -1,14 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import { TenantListSchema, TenantPublicSchema } from '@app/shared'
+import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
 import { prisma } from '../../lib/prisma.js'
 import { assertSameTenant, resolveTenant } from '../../lib/tenant.js'
-
-const tenantHeaderSchema = {
-  type: 'object',
-  properties: {
-    'x-tenant-id': { type: 'string', description: 'Tenant slug, e.g. athenai_demo' },
-  },
-} as const
 
 const tenantResponseSchema = {
   type: 'object',
@@ -27,7 +21,7 @@ export async function tenantRoutes(app: FastifyInstance) {
       onRequest: [app.authenticate],
       schema: {
         tags: ['tenants'],
-        summary: 'List tenants for the operator (no lead data)',
+        ...routeDocs.tenantsList,
         security: [{ bearerAuth: [] }],
       },
     },
@@ -49,7 +43,7 @@ export async function tenantRoutes(app: FastifyInstance) {
       {
         schema: {
           tags: ['tenants'],
-          summary: 'Current tenant from X-Tenant-Id',
+          ...routeDocs.tenantsCurrent,
           security: [{ bearerAuth: [] }],
           headers: tenantHeaderSchema,
           response: { 200: tenantResponseSchema },
@@ -63,7 +57,7 @@ export async function tenantRoutes(app: FastifyInstance) {
       {
         schema: {
           tags: ['tenants'],
-          summary: 'Tenant by slug; 404 if header does not match',
+          ...routeDocs.tenantsBySlug,
           security: [{ bearerAuth: [] }],
           headers: tenantHeaderSchema,
           params: {

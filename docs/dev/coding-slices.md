@@ -31,8 +31,8 @@
 | **FIX-1** | Фикстуры ≥60 + expected outcomes | ✅ | [TZ — фикстуры](../TZ.md#фикстуры) |
 | **IMP-1** | Импорт CSV / JSON / mock API | ✅ | [TZ — конвейер](../TZ.md#конвейер) |
 | **DEDUP-1** | Person, Company, связь, LeadCase, дедуп | ✅ | [TZ — дедуп](../TZ.md#правила-дедупа-объяснимые) |
-| **POLICY-1** | basis, guard, suppression, injection | ⬜ **текущий** | [TZ — ответы 1 и 4](../TZ.md#зафиксированные-ответы-hr) |
-| **RULE-1** | Правила `rules-v1` + DecisionRecord | ⬜ | [TZ — квалификация](../TZ.md#правила-квалификации-детерминированные-policy-rules-v1) |
+| **POLICY-1** | basis, guard, suppression, injection | ✅ | [TZ — ответы 1 и 4](../TZ.md#зафиксированные-ответы-hr) |
+| **RULE-1** | Правила `rules-v1` + DecisionRecord | ⬜ **текущий** | [TZ — квалификация](../TZ.md#правила-квалификации-детерминированные-policy-rules-v1) |
 | **LLM-1** | Mock LLM + схема + бюджет токенов | ⬜ | [TZ — LLM](../TZ.md#llm-adapter-p1) |
 | **DRAFT-1** | Draft + approval версии | ⬜ | [TZ — конвейер п.8–9](../TZ.md#конвейер) |
 | **OUT-1** | Outbox mock-send идемпотентный | ⬜ | тот же п.10 |
@@ -136,6 +136,8 @@
 - Тесты: opt-out, suppression, injection, UNKNOWN basis.
 
 **Что нет:** генерация письма, LLM.
+
+**Статус:** ✅ 2026-09-25. `deliveryGuard` + `deliveryGuardReason` на LeadCase. Opt-out / suppression / injection / UNKNOWN|PROHIBITED → `MANUAL_REVIEW` + `BLOCKED`. Чистому CONSENT пока `CLEAR`, QUALIFY не ставим (RULE-1). Список `SuppressionEntry` из `fixtures/suppression.json`. Детектор injection по маркерам в свободных полях. Политика гоняется в конце `POST /cases/resolve` и отдельно `POST /cases/apply-policy`.
 
 ---
 

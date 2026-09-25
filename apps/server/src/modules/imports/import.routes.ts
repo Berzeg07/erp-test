@@ -8,6 +8,7 @@ import {
   TenantSlugSchema,
 } from '@app/shared'
 import { ZodError } from 'zod'
+import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
 import { resolveTenant } from '../../lib/tenant.js'
 import { parseCsvLeads } from './import.csv.js'
 import { mockSourceLeadsForTenant } from './import.fixtures.js'
@@ -17,13 +18,6 @@ class ImportBodyError extends Error {
   readonly statusCode = 400
   readonly code = 'VALIDATION_ERROR'
 }
-
-const tenantHeaderSchema = {
-  type: 'object',
-  properties: {
-    'x-tenant-id': { type: 'string', description: 'Tenant slug, e.g. athenai_demo' },
-  },
-} as const
 
 const importResultSchema = {
   type: 'object',
@@ -117,7 +111,7 @@ export async function importRoutes(app: FastifyInstance) {
       {
         schema: {
           tags: ['imports'],
-          summary: 'Import raw leads from JSON { leads } / { csv } or text/csv',
+          ...routeDocs.importsPost,
           security: [{ bearerAuth: [] }],
           headers: tenantHeaderSchema,
           consumes: ['application/json', 'text/csv'],
@@ -146,7 +140,7 @@ export async function importRoutes(app: FastifyInstance) {
       {
         schema: {
           tags: ['imports'],
-          summary: 'Synthetic mock source: mock_api fixture rows for the current tenant',
+          ...routeDocs.mockSourceGet,
           security: [{ bearerAuth: [] }],
           headers: tenantHeaderSchema,
         },
@@ -166,7 +160,7 @@ export async function importRoutes(app: FastifyInstance) {
       {
         schema: {
           tags: ['imports'],
-          summary: 'Import current tenant rows from GET /mock-source/leads',
+          ...routeDocs.importsFromMock,
           security: [{ bearerAuth: [] }],
           headers: tenantHeaderSchema,
           response: { 200: importResultSchema },
@@ -183,7 +177,7 @@ export async function importRoutes(app: FastifyInstance) {
       {
         schema: {
           tags: ['imports'],
-          summary: 'List stored RawLeadRecord for the current tenant',
+          ...routeDocs.importsRawList,
           security: [{ bearerAuth: [] }],
           headers: tenantHeaderSchema,
         },

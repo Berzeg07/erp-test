@@ -23,3 +23,5 @@ pnpm --filter @app/server exec prisma migrate deploy
 ```
 
 Перед migrate: `Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue` если в shell уже задан чужой `DATABASE_URL`.
+
+Тесты сервера сами ходят в Postgres-схему `test` (или в `TEST_DATABASE_URL`). `wipeLeadGraph` не трогает `public`, куда пишет Swagger / `pnpm dev`.

@@ -7,6 +7,7 @@ import {
   type UserRole,
 } from '@app/shared'
 import { ZodError } from 'zod'
+import { routeDocs } from '../../lib/openapi.js'
 import { AuthError, getMe, loginUser } from './auth.service.js'
 import { toAuthUser } from './auth.mapper.js'
 import {
@@ -66,7 +67,7 @@ export async function authRoutes(app: FastifyInstance, options: AuthRoutesOption
       ...authRouteConfig,
       schema: {
         tags: ['auth'],
-        summary: 'Login',
+        ...routeDocs.authLogin,
         body: {
           type: 'object',
           required: ['email', 'password'],
@@ -93,7 +94,7 @@ export async function authRoutes(app: FastifyInstance, options: AuthRoutesOption
       ...authRouteConfig,
       schema: {
         tags: ['auth'],
-        summary: 'Refresh session',
+        ...routeDocs.authRefresh,
         body: {
           type: 'object',
           required: ['refreshToken'],
@@ -127,7 +128,7 @@ export async function authRoutes(app: FastifyInstance, options: AuthRoutesOption
       onRequest: [app.authenticate],
       schema: {
         tags: ['auth'],
-        summary: 'Logout',
+        ...routeDocs.authLogout,
         security: [{ bearerAuth: [] }],
       },
     },
@@ -149,7 +150,7 @@ export async function authRoutes(app: FastifyInstance, options: AuthRoutesOption
       onRequest: [app.authenticate],
       schema: {
         tags: ['auth'],
-        summary: 'Current operator',
+        ...routeDocs.authMe,
         security: [{ bearerAuth: [] }],
       },
     },

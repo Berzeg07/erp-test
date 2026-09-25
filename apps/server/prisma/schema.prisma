@@ -52,6 +52,7 @@ model Tenant {
   companies      Company[]
   companyContacts CompanyContact[]
   leadCases      LeadCase[]
+  suppressionEntries SuppressionEntry[]
 }
 
 enum LeadCaseStatus {
@@ -63,6 +64,13 @@ enum LeadCaseStatus {
 enum DeliveryGuard {
   CLEAR
   BLOCKED
+}
+
+enum ProcessingBasis {
+  CONSENT
+  DOCUMENTED_LEGITIMATE_INTEREST
+  UNKNOWN
+  PROHIBITED
 }
 
 model Person {
@@ -151,9 +159,13 @@ model LeadCase {
   company          Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyContactId String
   companyContact   CompanyContact @relation(fields: [companyContactId], references: [id], onDelete: Cascade)
-  status           LeadCaseStatus @default(MANUAL_REVIEW)
-  deliveryGuard    DeliveryGuard  @default(CLEAR)
-  mergeBy          String         @default("none")
+  status           LeadCaseStatus   @default(MANUAL_REVIEW)
+  deliveryGuard    DeliveryGuard    @default(CLEAR)
+  deliveryGuardReason String?
+  processingBasis  ProcessingBasis  @default(UNKNOWN)
+  processingBasisEvidenceRefs Json @default("[]")
+  sourcePurpose    String           @default("")
+  mergeBy          String           @default("none")
   conflicts        Json
   reasons          Json
   createdAt        DateTime       @default(now())
@@ -181,4 +193,17 @@ model RawLeadRecord {
   @@unique([tenantId, source, externalId])
   @@index([tenantId])
   @@index([leadCaseId])
+}
+
+model SuppressionEntry {
+  id              String   @id @default(uuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  emailNormalized String
+  reason          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, emailNormalized])
+  @@index([tenantId])
 }

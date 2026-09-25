@@ -285,6 +285,8 @@ Kill-switch: ручной `POST` и авто из бюджета. Глушит L
 - `POST /imports/from-mock-source`
 - `GET /imports/raw` — сырые записи текущего tenant
 - `POST /cases/resolve` — дедуп raw → Person/Company/LeadCase
+- `POST /cases/apply-policy` — deliveryGuard (opt-out / suppression / injection / basis)
+- `GET /suppression`, `POST /suppression/from-fixtures`
 - `GET /cases`, `GET /cases/:id` (evidence, raw refs, decisions, guard)
 - `POST /cases/:id/qualify` (правила ± LLM)
 - `POST /cases/:id/drafts`, `PATCH` текст (новая version, revoke approval)

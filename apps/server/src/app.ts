@@ -6,12 +6,14 @@ import rateLimit from '@fastify/rate-limit'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
 import { corsOrigins, env } from './config/env.js'
+import { openApiInfo, openApiTags } from './lib/openapi.js'
+import type { RequestTenant } from './lib/tenant.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { healthRoutes } from './modules/health/health.routes.js'
 import { tenantRoutes } from './modules/tenants/tenant.routes.js'
 import { importRoutes } from './modules/imports/import.routes.js'
 import { dedupRoutes } from './modules/dedup/dedup.routes.js'
-import type { RequestTenant } from './lib/tenant.js'
+import { policyRoutes } from './modules/policy/policy.routes.js'
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {
@@ -101,18 +103,8 @@ export async function buildServer(options: BuildServerOptions = {}) {
 
   await app.register(swagger, {
     openapi: {
-      info: {
-        title: 'AthenAI Lead Engine API',
-        description: 'Safe Revenue Loop — synthetic data only. Default mock LLM, no real send.',
-        version: '0.1.0',
-      },
-      tags: [
-        { name: 'health', description: 'Liveness' },
-        { name: 'auth', description: 'Operator session' },
-        { name: 'tenants', description: 'Tenant isolation' },
-        { name: 'imports', description: 'Synthetic raw lead import' },
-        { name: 'cases', description: 'Dedup Person/Company/LeadCase' },
-      ],
+      info: openApiInfo,
+      tags: openApiTags,
       components: {
         securitySchemes: {
           bearerAuth: {
@@ -143,6 +135,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
   await app.register(tenantRoutes)
   await app.register(importRoutes)
   await app.register(dedupRoutes)
+  await app.register(policyRoutes)
 
   return app
 }

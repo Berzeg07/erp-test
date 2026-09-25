@@ -2,6 +2,7 @@ import { z } from 'zod'
 import {
   DeliveryGuardSchema,
   LeadCaseStatusSchema,
+  ProcessingBasisSchema,
   RawLeadRecordSchema,
   TenantSlugSchema,
 } from './fixtures.js'
@@ -44,6 +45,16 @@ export const LeadCaseSummarySchema = z.object({
   id: z.string().uuid(),
   status: LeadCaseStatusSchema,
   deliveryGuard: DeliveryGuardSchema,
+  deliveryGuardReason: z.string().nullable(),
+  processingBasis: ProcessingBasisSchema,
+  processingBasisEvidenceRefs: z.array(
+    z.object({
+      rawId: z.string(),
+      field: z.string(),
+      source: z.string().optional(),
+    }),
+  ),
+  sourcePurpose: z.string(),
   mergeBy: MergeBySchema,
   conflicts: z.array(z.string()),
   reasons: z.array(z.string()),

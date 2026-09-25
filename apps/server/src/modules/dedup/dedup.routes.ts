@@ -1,14 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import { DedupResolveResultSchema, LeadCaseDetailSchema, LeadCaseListSchema } from '@app/shared'
+import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
 import { TENANT_ISOLATION, resolveTenant } from '../../lib/tenant.js'
 import { getLeadCase, listLeadCases, resolveLeadCases } from './dedup.service.js'
-
-const tenantHeaderSchema = {
-  type: 'object',
-  properties: {
-    'x-tenant-id': { type: 'string', description: 'Tenant slug, e.g. athenai_demo' },
-  },
-} as const
 
 export async function dedupRoutes(app: FastifyInstance) {
   app.register(async (scoped) => {
@@ -20,7 +14,7 @@ export async function dedupRoutes(app: FastifyInstance) {
       {
         schema: {
           tags: ['cases'],
-          summary: 'Resolve Person/Company/LeadCase from stored RawLeadRecord (idempotent)',
+          ...routeDocs.casesResolve,
           security: [{ bearerAuth: [] }],
           headers: tenantHeaderSchema,
         },
@@ -33,7 +27,7 @@ export async function dedupRoutes(app: FastifyInstance) {
       {
         schema: {
           tags: ['cases'],
-          summary: 'List LeadCase for the current tenant',
+          ...routeDocs.casesList,
           security: [{ bearerAuth: [] }],
           headers: tenantHeaderSchema,
         },
@@ -46,7 +40,7 @@ export async function dedupRoutes(app: FastifyInstance) {
       {
         schema: {
           tags: ['cases'],
-          summary: 'LeadCase detail with raw refs; 404 if other tenant',
+          ...routeDocs.casesById,
           security: [{ bearerAuth: [] }],
           headers: tenantHeaderSchema,
           params: {
