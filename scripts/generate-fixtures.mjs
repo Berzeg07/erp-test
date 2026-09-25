@@ -757,8 +757,7 @@ if (ids.size !== leads.length) {
 
 function csvEscape(value) {
   const text = value == null ? '' : String(value)
-  if (/[",\n]/.test(text)) return `"${text.replaceAll('"', '""')}"`
-  return text
+  return `"${text.replaceAll('"', '""')}"`
 }
 
 const columns = [

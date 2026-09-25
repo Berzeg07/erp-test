@@ -9,6 +9,7 @@ import { corsOrigins, env } from './config/env.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { healthRoutes } from './modules/health/health.routes.js'
 import { tenantRoutes } from './modules/tenants/tenant.routes.js'
+import { importRoutes } from './modules/imports/import.routes.js'
 import type { RequestTenant } from './lib/tenant.js'
 
 declare module '@fastify/jwt' {
@@ -36,6 +37,11 @@ export async function buildServer(options: BuildServerOptions = {}) {
   const enableLogger = options.logger ?? process.env.NODE_ENV !== 'test'
 
   const app = Fastify({
+    ajv: {
+      customOptions: {
+        keywords: ['example'],
+      },
+    },
     logger: enableLogger
       ? {
           serializers: {
@@ -103,6 +109,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
         { name: 'health', description: 'Liveness' },
         { name: 'auth', description: 'Operator session' },
         { name: 'tenants', description: 'Tenant isolation' },
+        { name: 'imports', description: 'Synthetic raw lead import' },
       ],
       components: {
         securitySchemes: {
@@ -132,6 +139,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
     },
   })
   await app.register(tenantRoutes)
+  await app.register(importRoutes)
 
   return app
 }

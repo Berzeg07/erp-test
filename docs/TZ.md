@@ -280,9 +280,10 @@ Kill-switch: ручной `POST` и авто из бюджета. Глушит L
 
 Префикс домена: `/t/:tenantId` **или** header (решение в BOOT-0, одно на весь проект).
 
-- `POST /imports` CSV multipart / JSON body
+- `POST /imports` CSV (`text/csv` или `{ csv }`) / JSON `{ leads }`
 - `GET /mock-source/leads` — фейковый внешний источник
 - `POST /imports/from-mock-source`
+- `GET /imports/raw` — сырые записи текущего tenant
 - `GET /cases`, `GET /cases/:id` (evidence, raw refs, decisions, guard)
 - `POST /cases/:id/qualify` (правила ± LLM)
 - `POST /cases/:id/drafts`, `PATCH` текст (новая version, revoke approval)

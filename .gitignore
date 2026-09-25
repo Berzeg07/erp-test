@@ -17,3 +17,4 @@ apps/server/prisma/*.db-journal
 test-results
 *.session
 output/
+SLICE-JOURNAL.md

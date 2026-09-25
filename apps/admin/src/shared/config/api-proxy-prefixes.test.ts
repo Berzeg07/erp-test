@@ -13,4 +13,9 @@ describe('admin API proxy prefixes', () => {
   it('proxies tenant routes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/tenants')
   })
+
+  it('proxies import and mock-source routes', () => {
+    expect(WEB_API_PROXY_PREFIXES).toContain('/imports')
+    expect(WEB_API_PROXY_PREFIXES).toContain('/mock-source')
+  })
 })
