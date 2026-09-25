@@ -294,8 +294,8 @@ Kill-switch: ручной `POST` и авто из бюджета. Глушит L
 - `POST /drafts/:versionId/approve`
 - `POST /drafts/:versionId/send` — 409 без approval / при BLOCKED / kill-switch / stale; повтор — тот же outbox id
 - `GET /outbox` — mock-отправки текущей квартиры
-- `POST /replies`
-- `POST /events/meetings`, `POST /events/payments`
+- `POST /replies` `{ leadCaseId, type }`; `POST /replies/from-fixtures`; `GET /replies`; `GET /tasks`
+- `POST /events/meetings`, `POST /events/payments` — не выводятся из positive; списки GET
 - `GET /crm/{companies,contacts,deals,tasks}`
 - `GET /dlq`, `POST /dlq/:id/reprocess`
 - `GET /metrics`

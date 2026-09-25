@@ -36,8 +36,8 @@
 | **LLM-1** | Mock LLM + схема + бюджет токенов | ✅ | [TZ — LLM](../TZ.md#llm-adapter-p1) |
 | **DRAFT-1** | Draft + approval версии | ✅ | [TZ — конвейер п.8–9](../TZ.md#конвейер) |
 | **OUT-1** | Outbox mock-send идемпотентный | ✅ | тот же п.10 |
-| **REPLY-1** | Mock replies + задачи; payment/meeting события | ⬜ **текущий** | [TZ — ответы](../TZ.md#mock-ответы-и-задачи) |
-| **CRM-1** | Upsert CRM, 429/5xx, DLQ, reprocess | ⬜ | [TZ — CRM](../TZ.md#mock-crm) |
+| **REPLY-1** | Mock replies + задачи; payment/meeting события | ✅ | [TZ — ответы](../TZ.md#mock-ответы-и-задачи) |
+| **CRM-1** | Upsert CRM, 429/5xx, DLQ, reprocess | ⬜ **текущий** | [TZ — CRM](../TZ.md#mock-crm) |
 | **METR-1** | Метрики SYNTHETIC + kill-switch | ⬜ | [TZ — метрики](../TZ.md#метрики-все-с-флагом-synthetic-true) |
 | **UI-1** | Немая демо-панель Vuetify под скринкаст | ⬜ после METR-1 | [screencast.md](./screencast.md), [TZ — UI](../TZ.md#минимальный-ui-vuetify-appsadmin) |
 | **TEST-1** | Добить ≥18 обязательных тестов | ⬜ можно параллельно с UI-1 | [TZ — тесты](../TZ.md#автотесты-минимум-18) |
@@ -212,6 +212,8 @@
 - `POST /events/payments` и meetings; тест: positive reply ≠ payment.
 
 **Что нет:** UI формы ответа (API).
+
+**Статус:** ✅ 2026-09-25. `POST /replies` и `POST /replies/from-fixtures` (plannedReply с raw). Типы TZ + `neutral`. Задача на `question` / `opt_out` / `uncertain`. `opt_out` → suppression + `MANUAL_REVIEW` + `BLOCKED`. Positive не создаёт payment/meeting. `POST /events/payments` и `POST /events/meetings` — отдельные, идемпотентные. Списки `GET /replies`, `GET /tasks`, `GET /events/*`.
 
 ---
 

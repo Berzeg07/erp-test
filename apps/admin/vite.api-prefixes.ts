@@ -8,5 +8,8 @@ export const WEB_API_PROXY_PREFIXES = [
   '/cases',
   '/drafts',
   '/outbox',
+  '/replies',
+  '/tasks',
+  '/events',
   '/suppression',
 ] as const

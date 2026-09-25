@@ -23,7 +23,8 @@ export const openApiInfo = {
     '2. Стоп-список (`POST /suppression/from-fixtures`) — по желанию.',
     '3. `POST /cases/resolve` — склейка, затем policy (`deliveryGuard`), rules-v1 (`status`, `score`, `DecisionRecord`) и mock-LLM (совет в `decision.llmOutput`).',
     '4. Черновик `POST /cases/{id}/drafts` → approve → `POST /drafts/{versionId}/send` (outbox, без SMTP).',
-    '5. Смотреть `GET /cases` / `GET /cases/{id}` / `GET /outbox`.',
+    '5. Ответ `POST /replies` (или `POST /replies/from-fixtures`). Оплата/встреча только `POST /events/payments` и `POST /events/meetings`.',
+    '6. Смотреть `GET /cases` / `GET /outbox` / `GET /replies` / `GET /tasks`.',
     '',
     '## Три разные оси на сырье',
     '',
@@ -162,6 +163,16 @@ export const openApiInfo = {
     'Перед записью: kill-switch / бюджет → 409 `KILL_SWITCH_ACTIVE` / `BUDGET_EXCEEDED`; `BLOCKED` → `DELIVERY_BLOCKED`; не QUALIFY → `NOT_QUALIFIED`; не последняя версия → `APPROVAL_STALE`; нет approve → `APPROVAL_REQUIRED`.',
     '',
     'Уже отправленную версию повтор не режет, даже если guard потом стал BLOCKED. Список: `GET /outbox` этой квартиры.',
+    '',
+    '## Ответы (mock, не inbox)',
+    '',
+    '`POST /replies` `{ leadCaseId, type }`. Типы: positive / negative / question / opt_out / out_of_office / uncertain (+ `neutral` из фикстур).',
+    '',
+    'Задача менеджеру (`GET /tasks`): `question`, `opt_out`, `uncertain`. Positive **не** создаёт payment и **не** создаёт meeting.',
+    '',
+    '`opt_out` → email в стоп-список + карточка `MANUAL_REVIEW` + `BLOCKED` / `opt_out`. Импорт запланированных: `POST /replies/from-fixtures` (поле raw `plannedReply`).',
+    '',
+    'Оплата: `POST /events/payments`. Встреча: `POST /events/meetings`. Это отдельные события, не вывод из positive.',
   ].join('\n'),
 }
 
@@ -175,6 +186,8 @@ export const openApiTags = [
   { name: 'rules', description: 'Квалификация rules-v1: QUALIFY / REJECT / MANUAL_REVIEW + DecisionRecord. Следом mock-LLM пишет llmOutput.' },
   { name: 'drafts', description: 'Черновик mock-email только из evidence. Письмо только QUALIFY + CLEAR. Approve привязан к versionId. Send — POST /drafts/{versionId}/send.' },
   { name: 'outbox', description: 'Локальный mock-outbox. SMTP нет. GET /outbox — что «отправили» в этой квартире.' },
+  { name: 'replies', description: 'Mock-входящие: шесть типов. Задача на question/opt_out/uncertain. opt_out → suppression + BLOCKED. Positive не оплата.' },
+  { name: 'events', description: 'Payment и meeting только отдельным POST. Не выводятся из ответа positive.' },
 ]
 
 export const tenantHeaderSchema = {
@@ -432,6 +445,61 @@ export const routeDocs = {
       'Пустой messages[] = ещё не слали (или слали без approve — тогда тоже пусто). Соседний tenant своих строк не видит. SMTP нет.',
     ].join('\n'),
   },
+  repliesFromFixtures: {
+    summary: 'Накатить plannedReply с сырья на карточки квартиры',
+    description: [
+      'JWT + x-tenant-id. Body нет. Для каждой карточки берёт plannedReply с привязанных raw (Ira в mock-source его нет — нужны строки a-reply-* через POST /imports).',
+      '',
+      'Шесть типов ТЗ плюс neutral из фикстур. Повтор не размножает (ключ tenant+case+type). Задачи: question, opt_out, uncertain.',
+    ].join('\n'),
+  },
+  repliesPost: {
+    summary: 'Записать mock-ответ на карточку',
+    description: [
+      'Тело: { "leadCaseId", "type" }. type: positive | negative | neutral | question | opt_out | out_of_office | uncertain.',
+      '',
+      'question / opt_out / uncertain → задача менеджеру (GET /tasks), taskId в ответе. Остальные taskId=null.',
+      '',
+      'opt_out: email в GET /suppression (reason opt_out), карточка MANUAL_REVIEW + BLOCKED. Positive не пишет payment и meeting — для этого POST /events/payments и /events/meetings.',
+      '',
+      'Повтор того же type на ту же карточку: тот же replyId, idempotent=true. Чужой leadCaseId → 404 TENANT_ISOLATION. Пустой type → 400.',
+    ].join('\n'),
+  },
+  repliesList: {
+    summary: 'Mock-ответы этой квартиры',
+    description:
+      'JWT + x-tenant-id. Список InboundReply. Пусто = ещё не POST /replies и не from-fixtures. Сосед своих строк не видит.',
+  },
+  tasksList: {
+    summary: 'Задачи менеджеру этой квартиры',
+    description: [
+      'JWT + x-tenant-id. Открываются с ответов question, opt_out, uncertain. Ключ tenant+type+leadCaseId, повтор не плодит вторую.',
+      '',
+      'Positive сюда не попадает. Это не CRM-task (срез CRM-1).',
+    ].join('\n'),
+  },
+  eventsPaymentsPost: {
+    summary: 'Отметить оплату отдельным событием',
+    description: [
+      'Тело: { "leadCaseId" }. Не вызывается из positive reply — только эта ручка. Идемпотентно: повтор → тот же paymentId.',
+      '',
+      'Чужой id → 404 TENANT_ISOLATION. Список GET /events/payments.',
+    ].join('\n'),
+  },
+  eventsPaymentsList: {
+    summary: 'Оплаты этой квартиры',
+    description: 'JWT + x-tenant-id. Пустой payments[] после одного positive — так и должно: оплата только отдельным POST.',
+  },
+  eventsMeetingsPost: {
+    summary: 'Отметить встречу отдельным событием',
+    description: [
+      'Тело: { "leadCaseId" }. Positive reply встречу не создаёт. Повтор — тот же meetingId. Чужой id → 404.',
+    ].join('\n'),
+  },
+  eventsMeetingsList: {
+    summary: 'Встречи этой квартиры',
+    description: 'JWT + x-tenant-id. Пусто, пока не было POST /events/meetings. Не путать с ответом positive.',
+  },
 } as const satisfies Record<string, RouteDoc>
 
 export const importLeadItemSchema = {
@@ -570,6 +638,36 @@ export const openApiSchemas = {
       outboxId: { type: 'string' as const, format: 'uuid' },
       status: { type: 'string' as const, enum: ['MOCK_SENT'] },
       idempotent: { type: 'boolean' as const },
+    },
+  },
+  InboundReply: {
+    type: 'object' as const,
+    description: [
+      'Mock-входящий ответ, не живой inbox. type: positive/negative/question/opt_out/out_of_office/uncertain (+neutral).',
+      'Ключ tenant+leadCaseId+type. Задача только у question, opt_out, uncertain. Positive не создаёт payment и meeting.',
+    ].join(' '),
+    properties: {
+      type: {
+        type: 'string' as const,
+        enum: ['positive', 'negative', 'neutral', 'question', 'opt_out', 'out_of_office', 'uncertain'],
+      },
+      taskId: { type: 'string' as const, format: 'uuid', nullable: true },
+    },
+  },
+  ManagerTask: {
+    type: 'object' as const,
+    description:
+      'Задача человеку. Открывается с mock-ответа question / opt_out / uncertain. Ключ tenant+type+leadCaseId. Не сущность mock CRM.',
+    properties: {
+      type: { type: 'string' as const, enum: ['question', 'opt_out', 'uncertain'] },
+    },
+  },
+  PaymentEvent: {
+    type: 'object' as const,
+    description:
+      'Оплата только отдельным POST /events/payments. Positive reply это поле не заполняет и строку не создаёт.',
+    properties: {
+      paymentId: { type: 'string' as const, format: 'uuid' },
     },
   },
 }

@@ -63,6 +63,10 @@ model Tenant {
   draftVersions   DraftVersion[]
   approvals       Approval[]
   outboxMessages  OutboxMessage[]
+  inboundReplies  InboundReply[]
+  managerTasks    ManagerTask[]
+  paymentEvents   PaymentEvent[]
+  meetingEvents   MeetingEvent[]
 }
 
 enum LeadCaseStatus {
@@ -188,6 +192,10 @@ model LeadCase {
   decisionRecord   DecisionRecord?
   draft            Draft?
   outboxMessages   OutboxMessage[]
+  inboundReplies   InboundReply[]
+  managerTasks     ManagerTask[]
+  paymentEvents    PaymentEvent[]
+  meetingEvents    MeetingEvent[]
 
   @@unique([tenantId, personId, companyId])
   @@index([tenantId])
@@ -312,4 +320,61 @@ model OutboxMessage {
 
   @@index([tenantId])
   @@index([leadCaseId])
+}
+
+model InboundReply {
+  id         String   @id @default(uuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId String
+  leadCase   LeadCase @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  type       String
+  createdAt  DateTime @default(now())
+
+  tasks ManagerTask[]
+
+  @@unique([tenantId, leadCaseId, type])
+  @@index([tenantId])
+  @@index([leadCaseId])
+}
+
+model ManagerTask {
+  id         String        @id @default(uuid())
+  tenantId   String
+  tenant     Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId String
+  leadCase   LeadCase      @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  replyId    String?
+  reply      InboundReply? @relation(fields: [replyId], references: [id], onDelete: SetNull)
+  type       String
+  status     String        @default("open")
+  createdAt  DateTime      @default(now())
+
+  @@unique([tenantId, type, leadCaseId])
+  @@index([tenantId])
+  @@index([leadCaseId])
+}
+
+model PaymentEvent {
+  id         String   @id @default(uuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId String
+  leadCase   LeadCase @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([tenantId, leadCaseId])
+  @@index([tenantId])
+}
+
+model MeetingEvent {
+  id         String   @id @default(uuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId String
+  leadCase   LeadCase @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([tenantId, leadCaseId])
+  @@index([tenantId])
 }

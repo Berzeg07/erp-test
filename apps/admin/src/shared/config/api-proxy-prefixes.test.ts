@@ -31,6 +31,12 @@ describe('admin API proxy prefixes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/outbox')
   })
 
+  it('proxies reply, task and event routes', () => {
+    expect(WEB_API_PROXY_PREFIXES).toContain('/replies')
+    expect(WEB_API_PROXY_PREFIXES).toContain('/tasks')
+    expect(WEB_API_PROXY_PREFIXES).toContain('/events')
+  })
+
   it('proxies suppression routes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/suppression')
   })

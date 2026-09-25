@@ -30,6 +30,14 @@ const documented: Array<{ method: string; path: string; doc: keyof typeof routeD
   { method: 'post', path: '/drafts/{versionId}/approve', doc: 'draftsApprove' },
   { method: 'post', path: '/drafts/{versionId}/send', doc: 'draftsSend' },
   { method: 'get', path: '/outbox', doc: 'outboxList' },
+  { method: 'post', path: '/replies/from-fixtures', doc: 'repliesFromFixtures' },
+  { method: 'post', path: '/replies', doc: 'repliesPost' },
+  { method: 'get', path: '/replies', doc: 'repliesList' },
+  { method: 'get', path: '/tasks', doc: 'tasksList' },
+  { method: 'post', path: '/events/payments', doc: 'eventsPaymentsPost' },
+  { method: 'get', path: '/events/payments', doc: 'eventsPaymentsList' },
+  { method: 'post', path: '/events/meetings', doc: 'eventsMeetingsPost' },
+  { method: 'get', path: '/events/meetings', doc: 'eventsMeetingsList' },
 ]
 
 describe('OpenAPI operation docs', () => {
@@ -63,6 +71,9 @@ describe('OpenAPI operation docs', () => {
     expect(body.components?.schemas?.DraftVersion?.description).toContain('versionId')
     expect(body.info?.description).toContain('## Outbox')
     expect(body.components?.schemas?.OutboxMessage?.description).toContain('MOCK_SENT')
+    expect(body.info?.description).toContain('## Ответы')
+    expect(body.components?.schemas?.InboundReply?.description).toContain('positive')
+    expect(body.components?.schemas?.PaymentEvent?.description).toContain('events/payments')
 
     for (const item of documented) {
       const operation = body.paths?.[item.path]?.[item.method]

@@ -10,6 +10,6 @@ Guard: нет access-токена → `/login`.
 
 ## Proxy
 
-Префиксы в `apps/admin/vite.api-prefixes.ts`: `/auth`, `/health`, `/docs`, `/tenants`, `/imports`, `/mock-source`, `/cases`, `/drafts`, `/outbox`, `/suppression`.
+Префиксы в `apps/admin/vite.api-prefixes.ts`: `/auth`, `/health`, `/docs`, `/tenants`, `/imports`, `/mock-source`, `/cases`, `/drafts`, `/outbox`, `/replies`, `/tasks`, `/events`, `/suppression`.
 
 Новый API-префикс: добавить туда + smoke-тест `api-proxy-prefixes.test.ts` + перезапуск Vite.

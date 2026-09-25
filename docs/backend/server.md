@@ -35,10 +35,18 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | POST | `/drafts/:versionId/approve` | JWT + `X-Tenant-Id` | approve точного versionId |
 | POST | `/drafts/:versionId/send` | JWT + `X-Tenant-Id` | mock-send в outbox; повтор — тот же id |
 | GET | `/outbox` | JWT + `X-Tenant-Id` | MOCK_SENT текущей квартиры |
+| POST | `/replies` | JWT + `X-Tenant-Id` | mock-ответ; opt_out → suppression + BLOCKED |
+| POST | `/replies/from-fixtures` | JWT + `X-Tenant-Id` | plannedReply с raw → ответы |
+| GET | `/replies` | JWT + `X-Tenant-Id` | ответы квартиры |
+| GET | `/tasks` | JWT + `X-Tenant-Id` | задачи question / opt_out / uncertain |
+| POST | `/events/payments` | JWT + `X-Tenant-Id` | оплата отдельным событием |
+| GET | `/events/payments` | JWT + `X-Tenant-Id` | оплаты квартиры |
+| POST | `/events/meetings` | JWT + `X-Tenant-Id` | встреча отдельным событием |
+| GET | `/events/meetings` | JWT + `X-Tenant-Id` | встречи квартиры |
 | POST | `/suppression/from-fixtures` | JWT | загрузить `fixtures/suppression.json` |
 | GET | `/suppression` | JWT + `X-Tenant-Id` | стоп-список текущего tenant |
 
-`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. Чистый годный: `QUALIFY` + `CLEAR`. Resolve в конце: policy, rules-v1, затем mock-LLM (`decision.llmOutput`). Сбой модели не QUALIFY. Канал только `mock_email`, CTA фиксирован политикой. Черновик: только QUALIFY + CLEAR, текст из evidence; BLOCKED → 409 `DELIVERY_BLOCKED`. Send: `POST /drafts/:versionId/send` → `MOCK_SENT` в outbox, без SMTP; без approve / stale / BLOCKED / kill-switch → 409. Повтор — тот же `outboxId`.
+`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. Чистый годный: `QUALIFY` + `CLEAR`. Resolve в конце: policy, rules-v1, затем mock-LLM (`decision.llmOutput`). Сбой модели не QUALIFY. Канал только `mock_email`, CTA фиксирован политикой. Черновик: только QUALIFY + CLEAR, текст из evidence; BLOCKED → 409 `DELIVERY_BLOCKED`. Send: `POST /drafts/:versionId/send` → `MOCK_SENT` в outbox, без SMTP; без approve / stale / BLOCKED / kill-switch → 409. Повтор — тот же `outboxId`. Ответ: `POST /replies`; задача на question/opt_out/uncertain; `opt_out` глушит карточку. Оплата и встреча — только `POST /events/*`, не из positive.
 
 Дедуп внутри tenant: один `externalId` (любой source) или один домен → одна Company. Нормализованное имя без домена/id **не** склеивает фирмы. LeadCase = Person × Company; один email в двух фирмах → два кейса. Сырьё не удаляется (`RawLeadRecord.leadCaseId`).
 
@@ -66,6 +74,7 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | `modules/llm` | mock-адаптер, Zod-совет, бюджет токенов, kill-switch из бюджета |
 | `modules/drafts` | черновик из evidence, версии, approval на versionId, mock-send |
 | `modules/outbox` | `OutboxMessage`, идемпотентный send, `GET /outbox` |
+| `modules/replies` | mock-ответы, задачи менеджеру, payment/meeting события |
 | `lib/tenant.ts` | `X-Tenant-Id`, 404 `TENANT_ISOLATION` |
 | `lib/prisma.ts` | PrismaClient |
 | `lib/refresh-token.ts` | create / rotate / revoke |
