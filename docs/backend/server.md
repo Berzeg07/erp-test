@@ -29,10 +29,14 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | POST | `/cases/apply-policy` | JWT + `X-Tenant-Id` | guard, затем rules-v1 и mock-LLM |
 | POST | `/cases/apply-rules` | JWT + `X-Tenant-Id` | QUALIFY/REJECT/REVIEW + DecisionRecord + mock-LLM |
 | POST | `/cases/:id/qualify` | JWT + `X-Tenant-Id` | то же на одну карточку; чужой id → 404 |
+| POST | `/cases/:id/drafts` | JWT + `X-Tenant-Id` | черновик из evidence; BLOCKED → 409 `DELIVERY_BLOCKED` |
+| GET | `/cases/:id/drafts` | JWT + `X-Tenant-Id` | версии черновика |
+| PATCH | `/drafts/:versionId` | JWT + `X-Tenant-Id` | новый текст = новая версия, старый approval не на ней |
+| POST | `/drafts/:versionId/approve` | JWT + `X-Tenant-Id` | approve точного versionId |
 | POST | `/suppression/from-fixtures` | JWT | загрузить `fixtures/suppression.json` |
 | GET | `/suppression` | JWT + `X-Tenant-Id` | стоп-список текущего tenant |
 
-`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. Чистый годный: `QUALIFY` + `CLEAR`. Resolve в конце: policy, rules-v1, затем mock-LLM (`decision.llmOutput`). Сбой модели не QUALIFY. Канал только `mock_email`, CTA фиксирован политикой. `X-LLM-Fault` в dev: `invalid_json` / `timeout` / `429` / `injection`.
+`deliveryGuard` — не статус карточки. Опасные кейсы: `status=MANUAL_REVIEW` + `BLOCKED` + причина. Чистый годный: `QUALIFY` + `CLEAR`. Resolve в конце: policy, rules-v1, затем mock-LLM (`decision.llmOutput`). Сбой модели не QUALIFY. Канал только `mock_email`, CTA фиксирован политикой. Черновик: только QUALIFY + CLEAR, текст из evidence; BLOCKED → 409 `DELIVERY_BLOCKED`. Send — OUT-1.
 
 Дедуп внутри tenant: один `externalId` (любой source) или один домен → одна Company. Нормализованное имя без домена/id **не** склеивает фирмы. LeadCase = Person × Company; один email в двух фирмах → два кейса. Сырьё не удаляется (`RawLeadRecord.leadCaseId`).
 
@@ -58,6 +62,7 @@ Fastify 5 + TypeScript + Prisma + JWT + rate-limit + OpenAPI. **Без Redis и 
 | `modules/policy` | deliveryGuard, suppression, injection |
 | `modules/rules` | rules-v1, DecisionRecord, QUALIFY/REJECT |
 | `modules/llm` | mock-адаптер, Zod-совет, бюджет токенов, kill-switch из бюджета |
+| `modules/drafts` | черновик из evidence, версии, approval на versionId |
 | `lib/tenant.ts` | `X-Tenant-Id`, 404 `TENANT_ISOLATION` |
 | `lib/prisma.ts` | PrismaClient |
 | `lib/refresh-token.ts` | create / rotate / revoke |

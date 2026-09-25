@@ -6,6 +6,9 @@ export async function wipeLeadGraph() {
     throw new Error('wipeLeadGraph refused outside NODE_ENV=test')
   }
 
+  await prisma.approval.deleteMany()
+  await prisma.draftVersion.deleteMany()
+  await prisma.draft.deleteMany()
   await prisma.decisionRecord.deleteMany()
   await prisma.leadCase.deleteMany()
   await prisma.companyContact.deleteMany()

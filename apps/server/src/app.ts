@@ -15,6 +15,7 @@ import { importRoutes } from './modules/imports/import.routes.js'
 import { dedupRoutes } from './modules/dedup/dedup.routes.js'
 import { policyRoutes } from './modules/policy/policy.routes.js'
 import { rulesRoutes } from './modules/rules/rules.routes.js'
+import { draftRoutes } from './modules/drafts/draft.routes.js'
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {
@@ -139,6 +140,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
   await app.register(dedupRoutes)
   await app.register(policyRoutes)
   await app.register(rulesRoutes)
+  await app.register(draftRoutes)
 
   return app
 }

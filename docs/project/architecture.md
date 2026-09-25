@@ -27,4 +27,4 @@
 
 Как в стартере: login → access + refresh. Seed `admin@app.local`.
 
-Dev proxy: `/auth`, `/health`, `/docs`, `/tenants`, `/imports`, `/mock-source`, `/cases`, `/suppression` → `:4101`.
+Dev proxy: `/auth`, `/health`, `/docs`, `/tenants`, `/imports`, `/mock-source`, `/cases`, `/drafts`, `/suppression` → `:4101`.

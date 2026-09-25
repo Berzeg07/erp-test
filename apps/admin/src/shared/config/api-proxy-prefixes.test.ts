@@ -23,6 +23,10 @@ describe('admin API proxy prefixes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/cases')
   })
 
+  it('proxies draft routes', () => {
+    expect(WEB_API_PROXY_PREFIXES).toContain('/drafts')
+  })
+
   it('proxies suppression routes', () => {
     expect(WEB_API_PROXY_PREFIXES).toContain('/suppression')
   })

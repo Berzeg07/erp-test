@@ -34,8 +34,8 @@
 | **POLICY-1** | basis, guard, suppression, injection | ✅ | [TZ — ответы 1 и 4](../TZ.md#зафиксированные-ответы-hr) |
 | **RULE-1** | Правила `rules-v1` + DecisionRecord | ✅ | [TZ — квалификация](../TZ.md#правила-квалификации-детерминированные-policy-rules-v1) |
 | **LLM-1** | Mock LLM + схема + бюджет токенов | ✅ | [TZ — LLM](../TZ.md#llm-adapter-p1) |
-| **DRAFT-1** | Draft + approval версии | ⬜ **текущий** | [TZ — конвейер п.8–9](../TZ.md#конвейер) |
-| **OUT-1** | Outbox mock-send идемпотентный | ⬜ | тот же п.10 |
+| **DRAFT-1** | Draft + approval версии | ✅ | [TZ — конвейер п.8–9](../TZ.md#конвейер) |
+| **OUT-1** | Outbox mock-send идемпотентный | ⬜ **текущий** | тот же п.10 |
 | **REPLY-1** | Mock replies + задачи; payment/meeting события | ⬜ | [TZ — ответы](../TZ.md#mock-ответы-и-задачи) |
 | **CRM-1** | Upsert CRM, 429/5xx, DLQ, reprocess | ⬜ | [TZ — CRM](../TZ.md#mock-crm) |
 | **METR-1** | Метрики SYNTHETIC + kill-switch | ⬜ | [TZ — метрики](../TZ.md#метрики-все-с-флагом-synthetic-true) |
@@ -183,6 +183,8 @@
 - Тесты: нет approval; правка после ok.
 
 **Что нет:** реальная отправка.
+
+**Статус:** ✅ 2026-09-25. `POST /cases/:id/drafts` собирает mock-email **из evidence** (имя, email, фирма, основание, sourcePurpose, locked CTA/канал). Не из `comment` и не из LLM. `BLOCKED` → 409 `DELIVERY_BLOCKED`. Не QUALIFY → 409 `NOT_QUALIFIED`. Версии иммутабельны. `POST /drafts/:versionId/approve`. `PATCH` `{ text }` → новая версия, approval старой к новой не относится. Send нет (OUT-1).
 
 ---
 

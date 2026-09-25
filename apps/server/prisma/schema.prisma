@@ -23,6 +23,7 @@ model User {
   updatedAt    DateTime @updatedAt
 
   refreshTokens RefreshToken[]
+  approvals     Approval[]
 }
 
 model RefreshToken {
@@ -58,6 +59,9 @@ model Tenant {
   leadCases      LeadCase[]
   suppressionEntries SuppressionEntry[]
   decisionRecords DecisionRecord[]
+  drafts          Draft[]
+  draftVersions   DraftVersion[]
+  approvals       Approval[]
 }
 
 enum LeadCaseStatus {
@@ -181,6 +185,7 @@ model LeadCase {
 
   rawRecords       RawLeadRecord[]
   decisionRecord   DecisionRecord?
+  draft            Draft?
 
   @@unique([tenantId, personId, companyId])
   @@index([tenantId])
@@ -235,6 +240,53 @@ model DecisionRecord {
   llmOutput           Json?
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
+
+  @@index([tenantId])
+}
+
+model Draft {
+  id         String   @id @default(uuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId String   @unique
+  leadCase   LeadCase @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  versions DraftVersion[]
+
+  @@index([tenantId])
+}
+
+model DraftVersion {
+  id            String   @id @default(uuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  draftId       String
+  draft         Draft    @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  subject       String
+  body          String
+  channel       String
+  cta           String
+  evidenceRefs  Json
+  createdAt     DateTime @default(now())
+
+  approval Approval?
+
+  @@unique([draftId, versionNumber])
+  @@index([tenantId])
+}
+
+model Approval {
+  id               String       @id @default(uuid())
+  tenantId         String
+  tenant           Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  draftVersionId   String       @unique
+  draftVersion     DraftVersion @relation(fields: [draftVersionId], references: [id], onDelete: Cascade)
+  approvedByUserId String
+  approvedBy       User         @relation(fields: [approvedByUserId], references: [id], onDelete: Restrict)
+  createdAt        DateTime     @default(now())
 
   @@index([tenantId])
 }

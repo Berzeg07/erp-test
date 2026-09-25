@@ -302,7 +302,7 @@ Kill-switch: ручной `POST` и авто из бюджета. Глушит L
 - `GET /tenants/:id/budget`
 - OpenAPI `/docs`
 
-Ошибки: стабильные коды `KILL_SWITCH_ACTIVE`, `BUDGET_EXCEEDED`, `DELIVERY_BLOCKED`, `APPROVAL_REQUIRED`, `APPROVAL_STALE`, `TENANT_ISOLATION`.
+Ошибки: стабильные коды `KILL_SWITCH_ACTIVE`, `BUDGET_EXCEEDED`, `DELIVERY_BLOCKED`, `NOT_QUALIFIED`, `APPROVAL_REQUIRED`, `APPROVAL_STALE`, `TENANT_ISOLATION`.
 
 ---
 

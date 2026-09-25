@@ -24,6 +24,10 @@ const documented: Array<{ method: string; path: string; doc: keyof typeof routeD
   { method: 'post', path: '/cases/apply-policy', doc: 'casesApplyPolicy' },
   { method: 'post', path: '/cases/apply-rules', doc: 'casesApplyRules' },
   { method: 'post', path: '/cases/{id}/qualify', doc: 'casesQualify' },
+  { method: 'post', path: '/cases/{id}/drafts', doc: 'casesCreateDraft' },
+  { method: 'get', path: '/cases/{id}/drafts', doc: 'casesListDrafts' },
+  { method: 'patch', path: '/drafts/{versionId}', doc: 'draftsPatch' },
+  { method: 'post', path: '/drafts/{versionId}/approve', doc: 'draftsApprove' },
 ]
 
 describe('OpenAPI operation docs', () => {
@@ -44,9 +48,17 @@ describe('OpenAPI operation docs', () => {
     expect(body.info?.description).toContain('| `QUALIFY` |')
     expect(body.info?.description).toContain('| `REJECT` |')
     expect(body.info?.description).toContain('| `MANUAL_REVIEW` |')
+    expect(body.info?.description).toContain('## Mock-LLM')
+    expect(body.info?.description).toContain('x-llm-fault')
+    expect(body.info?.description).toContain('decision.llmOutput')
     expect(body.components?.schemas?.ProcessingBasis?.description).toContain('CONSENT')
     expect(body.components?.schemas?.OptOut?.description).toContain('optOut')
     expect(body.components?.schemas?.PromptInjection?.description).toContain('prompt_injection')
+    expect(body.components?.schemas?.LlmOutput?.description).toContain('advice')
+    expect(body.components?.schemas?.LlmFault?.description).toContain('x-llm-fault')
+    expect(body.components?.schemas?.TenantBudget?.description).toContain('tokenSpent')
+    expect(body.info?.description).toContain('## Draft')
+    expect(body.components?.schemas?.DraftVersion?.description).toContain('versionId')
 
     for (const item of documented) {
       const operation = body.paths?.[item.path]?.[item.method]
