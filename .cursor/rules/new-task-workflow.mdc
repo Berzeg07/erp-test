@@ -1,0 +1,20 @@
+---
+description: Новая задача — план, минимальный diff, typecheck, тесты
+alwaysApply: true
+---
+
+# Workflow новой задачи
+
+- Перед правками: короткий план (3–5 пунктов), без лишнего рефакторинга.
+- Минимальный diff: не трогать файлы вне scope задачи- Коммиты и PR — только по явной просьбе пользователя.
+
+## После правок (обязательно)
+
+1. **Typecheck** затронутых пакетов:
+   - `pnpm --filter @app/web typecheck`
+   - `pnpm --filter @app/admin typecheck`
+   - `pnpm --filter @app/server typecheck`
+   - `pnpm --filter @app/shared typecheck`
+   - `pnpm --filter @app/worker typecheck`
+2. **Тесты** на новую/изменённую логику; прогнать затронутые test-файлы.
+3. UI-only без логики — тест опционален; typecheck обязателен.

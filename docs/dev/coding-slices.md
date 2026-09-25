@@ -26,8 +26,8 @@
 
 | ID | Срез | Статус | Контракт |
 | -- | ---- | ------ | -------- |
-| **BOOT-0** | Форк стартера, выкинуть лишнее, Swagger, Compose | ⬜ **текущий** | [TZ — стек](../TZ.md#стек-и-каркас) |
-| **TENANT-1** | Tenant + заголовок изоляции | ⬜ после BOOT-0 | [TZ — tenant](../TZ.md#tenant) |
+| **BOOT-0** | Форк стартера, выкинуть лишнее, Swagger, Compose | ✅ | [TZ — стек](../TZ.md#стек-и-каркас) |
+| **TENANT-1** | Tenant + заголовок изоляции | ⬜ **текущий** | [TZ — tenant](../TZ.md#tenant) |
 | **FIX-1** | Фикстуры ≥60 + expected outcomes | ⬜ | [TZ — фикстуры](../TZ.md#фикстуры) |
 | **IMP-1** | Импорт CSV / JSON / mock API | ⬜ | [TZ — конвейер](../TZ.md#конвейер) |
 | **DEDUP-1** | Person, Company, связь, LeadCase, дедуп | ⬜ | [TZ — дедуп](../TZ.md#правила-дедупа-объяснимые) |
@@ -59,6 +59,8 @@
 - `@fastify/swagger` + `@fastify/swagger-ui` → `/docs`.
 - Health без Redis. Seed оператора оставить.
 - Один прогон: `docker:up` → migrate → seed → dev → `/health` и `/login` админки.
+
+**Статус:** ✅ 2026-09-24. Postgres host-порт **5443** (5442 занят `app-postgres` стартера). `/health`, `/docs`, login seed проверены.
 
 **Что нет:** доменные таблицы лидов, экраны продукта, переименование `@app/` в другой scope.
 

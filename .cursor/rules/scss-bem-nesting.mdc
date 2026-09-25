@@ -1,0 +1,12 @@
+---
+description: SCSS BEM + to-rem
+globs: apps/admin/**/*.{vue,scss}
+alwaysApply: false
+---
+
+# SCSS
+
+- `<style scoped lang="scss">`
+- Один корень блока; элементы `&__`, модификаторы `&--`
+- Размеры — `to-rem()`, не сырые px (кроме 1px hairlines)
+- Breakpoints — только `@include mobile`, `@include tablet`, …

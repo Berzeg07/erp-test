@@ -1,0 +1,15 @@
+---
+description: FSD — слои, импорты, public API слайсов
+globs: apps/admin/**/*.{vue,ts},docs/frontend/fsd.md
+alwaysApply: false
+---
+
+# FSD
+
+Применяется в `apps/admin`.
+
+Слои: `app` → `pages` → `widgets` → `features` → `entities` → `shared`
+
+- Импорт только вниз по слоям.
+- Public API слайса — `index.ts`.
+- UI-kit: префикс **`Ui*`** в `shared/ui`.

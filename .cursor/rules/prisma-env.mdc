@@ -1,0 +1,25 @@
+---
+description: Prisma / DATABASE_URL — только через pnpm db:* скрипты с dotenv из корневого .env
+alwaysApply: true
+---
+
+# Prisma + DATABASE_URL
+
+`.env` лежит в **корне монорепо** (`vue-fastify-starter/.env`), не в `apps/server/`.
+
+## Делай так
+
+| Задача | Команда |
+| ------ | ------- |
+| migrate deploy | `pnpm db:migrate:deploy` |
+| migrate dev | `pnpm db:migrate` |
+| generate | `pnpm --filter @app/server db:generate` |
+| seed | `pnpm db:seed` |
+
+## Не делай так
+
+```powershell
+pnpm --filter @app/server exec prisma migrate deploy
+```
+
+Перед migrate: `Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue` если в shell уже задан чужой `DATABASE_URL`.

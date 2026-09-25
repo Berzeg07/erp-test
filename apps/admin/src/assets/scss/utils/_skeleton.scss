@@ -1,0 +1,17 @@
+@keyframes ui-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.ui-skeleton {
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: #2a2f3a;
+  animation: ui-skeleton-pulse 1.4s ease-in-out infinite;
+}

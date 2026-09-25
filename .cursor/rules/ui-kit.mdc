@@ -1,0 +1,11 @@
+---
+description: UI-kit Ui* компоненты
+globs: apps/admin/**/*.{vue,ts}
+alwaysApply: false
+---
+
+# UI-kit `Ui*`
+
+- Переиспользуемые примитивы — `shared/ui/{slice}/ui/Ui*.vue` + `index.ts`
+- Кнопки — **`UiButton`**, не сырые `<button>` без причины
+- Async UI — **`UiSkeleton`**, не текст «Загрузка…»

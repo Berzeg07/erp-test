@@ -1,0 +1,15 @@
+---
+description: Максимальное покрытие тестами на фичу
+alwaysApply: true
+---
+
+# Тесты
+
+На фичу/API: не только happy path — ошибки, auth gates, Zod reject.
+
+| Слой | Куда |
+| ---- | ---- |
+| Shared Zod | `packages/shared/src/*.test.ts` |
+| Server HTTP | `apps/server/src/modules/**/*.routes.test.ts` |
+| Client API | `entities/*/api/*.test.ts` |
+| Новый API-префикс | `vite.api-prefixes.ts` + smoke |

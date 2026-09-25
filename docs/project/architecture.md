@@ -1,0 +1,30 @@
+# Архитектура
+
+## Высокий уровень
+
+```
+┌─────────────────┐   HTTP + JWT        ┌──────────────────────┐
+│  apps/admin     │ ─────────────────►  │  apps/server         │
+│  Vue 3 + Vuetify│   Vite proxy        │  Fastify 5           │
+│  :5283          │                     │  :4101 /docs         │
+└─────────────────┘                     └──────────┬───────────┘
+         ▲                                         │
+         │  @app/shared (Zod)                      └──── PostgreSQL 16
+```
+
+Нет `apps/web`, worker и Redis. DLQ и retry — в API + Postgres (срезы CRM-1).
+
+## Принципы
+
+1. Сервер — источник правды.
+2. Контракт в `@app/shared`.
+3. Long-running Node, не serverless.
+4. Postgres = факты. Очереди — таблицы, не Redis.
+5. Один фронт: панель оператора. Tenant в заголовке (TENANT-1), не из JWT.
+6. Без WebSocket.
+
+## Auth
+
+Как в стартере: login → access + refresh. Seed `admin@app.local`.
+
+Dev proxy: `/auth`, `/health`, `/docs` → `:4101`.

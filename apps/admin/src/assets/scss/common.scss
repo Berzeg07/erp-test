@@ -1,0 +1,22 @@
+@use "vendors";
+@use "utils";
+@use "vars" as *;
+
+html {
+  color-scheme: dark;
+  background: $color-bg;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: $color-text;
+  background: $color-bg;
+  font-family: $font-family;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+}

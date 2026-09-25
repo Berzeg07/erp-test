@@ -1,0 +1,45 @@
+{
+  "name": "lead-engine",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "AthenAI Lead Engine — Safe Revenue Loop (synthetic)",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:admin": "pnpm --filter @app/admin dev",
+    "dev:server": "pnpm --filter @app/server dev",
+    "build": "pnpm -r build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "ci:prepare": "pnpm db:generate && pnpm db:migrate:deploy",
+    "ci:check": "pnpm typecheck && pnpm test",
+    "ci:build": "pnpm -r build",
+    "db:generate": "pnpm --filter @app/server db:generate",
+    "db:migrate": "pnpm --filter @app/server db:migrate",
+    "db:migrate:deploy": "pnpm --filter @app/server db:migrate:deploy",
+    "db:push": "pnpm --filter @app/server db:push",
+    "db:seed": "pnpm --filter @app/server db:seed",
+    "docker:up": "node scripts/docker-up.mjs",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "dotenv-cli": "^8.0.0",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-vue": "^10.0.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.1",
+    "vue-eslint-parser": "^10.1.1"
+  }
+}
