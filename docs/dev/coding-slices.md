@@ -28,8 +28,8 @@
 | -- | ---- | ------ | -------- |
 | **BOOT-0** | Форк стартера, выкинуть лишнее, Swagger, Compose | ✅ | [TZ — стек](../TZ.md#стек-и-каркас) |
 | **TENANT-1** | Tenant + заголовок изоляции | ✅ | [TZ — tenant](../TZ.md#tenant) |
-| **FIX-1** | Фикстуры ≥60 + expected outcomes | ⬜ **текущий** | [TZ — фикстуры](../TZ.md#фикстуры) |
-| **IMP-1** | Импорт CSV / JSON / mock API | ⬜ | [TZ — конвейер](../TZ.md#конвейер) |
+| **FIX-1** | Фикстуры ≥60 + expected outcomes | ✅ | [TZ — фикстуры](../TZ.md#фикстуры) |
+| **IMP-1** | Импорт CSV / JSON / mock API | ⬜ **текущий** | [TZ — конвейер](../TZ.md#конвейер) |
 | **DEDUP-1** | Person, Company, связь, LeadCase, дедуп | ⬜ | [TZ — дедуп](../TZ.md#правила-дедупа-объяснимые) |
 | **POLICY-1** | basis, guard, suppression, injection | ⬜ | [TZ — ответы 1 и 4](../TZ.md#зафиксированные-ответы-hr) |
 | **RULE-1** | Правила `rules-v1` + DecisionRecord | ⬜ | [TZ — квалификация](../TZ.md#правила-квалификации-детерминированные-policy-rules-v1) |
@@ -91,6 +91,8 @@
 - `expected-outcomes.json` (открытый набор).
 
 **Что нет:** движок квалификации (пока можно помечать expected вручную под будущие правила).
+
+**Статус:** ✅ 2026-09-25. `fixtures/leads.json` + CSV, `expected-outcomes.json`, `suppression.json`. Пересборка: `node scripts/generate-fixtures.mjs`.
 
 ---
 

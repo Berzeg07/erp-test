@@ -272,6 +272,8 @@ Kill-switch: ручной `POST` и авто из бюджета. Глушит L
 
 Открытый набор + `expected-outcomes.json` (статус, guard, склеится ли).
 
+Файлы: `fixtures/leads.json`, `fixtures/leads.csv`, `fixtures/expected-outcomes.json`, `fixtures/suppression.json`. Все записи с `"synthetic": true`.
+
 ---
 
 ## HTTP API (минимум)

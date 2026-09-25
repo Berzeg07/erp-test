@@ -1,0 +1,21 @@
+{
+  "synthetic": true,
+  "version": "fix-1",
+  "entries": [
+    {
+      "tenantSlug": "athenai_demo",
+      "email": "blocked@muted-mills.example",
+      "reason": "suppression"
+    },
+    {
+      "tenantSlug": "athenai_demo",
+      "email": "stop@quiet-harbor.example",
+      "reason": "opt_out"
+    },
+    {
+      "tenantSlug": "proshelf_demo",
+      "email": "stop@nomail-press.example",
+      "reason": "opt_out"
+    }
+  ]
+}

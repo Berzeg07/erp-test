@@ -1,0 +1,847 @@
+{
+  "synthetic": true,
+  "version": "fix-1",
+  "policyVersion": "rules-v1",
+  "outcomes": [
+    {
+      "mergeBy": "external_id",
+      "deliveryGuardReason": null,
+      "recordId": "a-dup-ext-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-nimbus-web-100",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Same external id as a-dup-ext-1b"
+    },
+    {
+      "mergeBy": "external_id",
+      "deliveryGuardReason": null,
+      "recordId": "a-dup-ext-1b",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-nimbus-web-100",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Duplicate of a-dup-ext-1 by external_id"
+    },
+    {
+      "mergeBy": "domain",
+      "deliveryGuardReason": null,
+      "recordId": "a-dup-domain-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-helix-domain",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Same domain as a-dup-domain-2"
+    },
+    {
+      "mergeBy": "domain",
+      "deliveryGuardReason": null,
+      "recordId": "a-dup-domain-2",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-helix-domain",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Duplicate of a-dup-domain-1 by domain"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-dup-name-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-northwind-a",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "CLEAR",
+      "notes": "Name-only overlap with a-dup-name-2; no domain/external id — do not merge"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-dup-name-2",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-northwind-b",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "CLEAR",
+      "notes": "Looks like a-dup-name-1 but different email/domain evidence missing"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "unknown_processing_basis",
+      "recordId": "a-incomplete-empty",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-incomplete-empty",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "No email, no company, unknown basis"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "unknown_processing_basis",
+      "recordId": "a-incomplete-name",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-incomplete-name",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Name only, no email/company"
+    },
+    {
+      "mergeBy": "domain",
+      "deliveryGuardReason": null,
+      "recordId": "a-conflict-src-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-cedar-conflict",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Conflicts with a-conflict-src-2 on who the contact is"
+    },
+    {
+      "mergeBy": "domain",
+      "deliveryGuardReason": null,
+      "recordId": "a-conflict-src-2",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-cedar-conflict",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Conflicts with a-conflict-src-1"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-two-co-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-mila-oak",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Same person email as a-two-co-2 at another company — two cases, both review"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-two-co-2",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-mila-pine",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Pair of a-two-co-1"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-two-domains-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-proshelf-corp",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "CLEAR",
+      "notes": "Same name as a-two-domains-2 but different domain, no shared external id"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-two-domains-2",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "g-proshelf-shop",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "CLEAR",
+      "notes": "Do not glue into one Company without evidence"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "opt_out",
+      "recordId": "a-optout-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-optout-1",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Opt-out: no draft, no send, cannot auto-unblock"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "suppression",
+      "recordId": "a-suppress-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-suppress-1",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Email is on tenant suppression list"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "prompt_injection",
+      "recordId": "a-inject-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-inject-1",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Injection in comment #1; untrusted text must not change tenant/CTA/budget"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "prompt_injection",
+      "recordId": "a-inject-2",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-inject-2",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Injection in comment #2; untrusted text must not change tenant/CTA/budget"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "prompt_injection",
+      "recordId": "a-inject-3",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-inject-3",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Injection in comment #3; untrusted text must not change tenant/CTA/budget"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "prompt_injection",
+      "recordId": "a-inject-4",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-inject-4",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Injection in comment #4; untrusted text must not change tenant/CTA/budget"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "prompt_injection",
+      "recordId": "a-inject-5",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-inject-5",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Injection in comment #5; untrusted text must not change tenant/CTA/budget"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "prompt_injection",
+      "recordId": "a-inject-6",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-inject-6",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Injection in comment #6; untrusted text must not change tenant/CTA/budget"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "unknown_processing_basis",
+      "recordId": "a-basis-unknown",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-basis-unknown",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "UNKNOWN basis → review + blocked"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "forbidden_source",
+      "recordId": "a-basis-prohibited",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-basis-prohibited",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "PROHIBITED / forbidden source"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-basis-li",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-basis-li",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Documented legitimate interest + complete record"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-reply-positive",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-reply-positive",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Planned mock reply type positive; payment never inferred from reply"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-reply-negative",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-reply-negative",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Planned mock reply type negative; payment never inferred from reply"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-reply-neutral",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-reply-neutral",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Planned mock reply type neutral; payment never inferred from reply"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-reply-question",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-reply-question",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Planned mock reply type question; payment never inferred from reply"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "opt_out",
+      "recordId": "a-reply-optout",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-reply-optout",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Planned mock reply type opt_out; payment never inferred from reply"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-reply-ooo",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-reply-ooo",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Planned mock reply type out_of_office; payment never inferred from reply"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-reply-uncertain",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-reply-uncertain",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Planned mock reply type uncertain; payment never inferred from reply"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-iso-ivan",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-iso-ivan",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Same email exists on proshelf_demo — must NOT merge across tenant"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-reject-consumer",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-reject-consumer",
+      "status": "REJECT",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete but not ICP; reject without contact ban"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-iso-ivan",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-iso-ivan",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Isolation trap vs a-iso-ivan"
+    },
+    {
+      "mergeBy": "external_id",
+      "deliveryGuardReason": null,
+      "recordId": "p-dup-ext-1",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "g-ps-100",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Proshelf duplicate pair"
+    },
+    {
+      "mergeBy": "external_id",
+      "deliveryGuardReason": null,
+      "recordId": "p-dup-ext-1b",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "g-ps-100",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Duplicate of p-dup-ext-1"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "opt_out",
+      "recordId": "p-optout-1",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-optout-1",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Proshelf opt-out"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "prompt_injection",
+      "recordId": "p-inject-1",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-inject-1",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "Injection must not switch tenant to athenai_demo"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": "unknown_processing_basis",
+      "recordId": "p-basis-unknown",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-basis-unknown",
+      "status": "MANUAL_REVIEW",
+      "deliveryGuard": "BLOCKED",
+      "notes": "UNKNOWN basis on proshelf"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-1",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-1",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-2",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-2",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-3",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-3",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-4",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-4",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-5",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-5",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-6",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-6",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-7",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-7",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-8",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-8",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-9",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-9",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-10",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-10",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-11",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-11",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-12",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-12",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-13",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-13",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-14",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-14",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-15",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-15",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-16",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-16",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-17",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-17",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-18",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-18",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-19",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-19",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-20",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-20",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-21",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-21",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-22",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-22",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-23",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-23",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "a-fill-24",
+      "tenantSlug": "athenai_demo",
+      "mergeGroup": "a-fill-24",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-25",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-25",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-26",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-26",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-27",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-27",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-28",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-28",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-29",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-29",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-30",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-30",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-31",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-31",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-32",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-32",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-33",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-33",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-34",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-34",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-35",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-35",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-36",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-36",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-37",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-37",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-38",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-38",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-39",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-39",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-40",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-40",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-41",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-41",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-42",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-42",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-43",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-43",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    },
+    {
+      "mergeBy": "none",
+      "deliveryGuardReason": null,
+      "recordId": "p-fill-44",
+      "tenantSlug": "proshelf_demo",
+      "mergeGroup": "p-fill-44",
+      "status": "QUALIFY",
+      "deliveryGuard": "CLEAR",
+      "notes": "Complete synthetic filler with consent"
+    }
+  ]
+}
