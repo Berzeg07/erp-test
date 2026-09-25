@@ -12,7 +12,7 @@
          │  @app/shared (Zod)                      └──── PostgreSQL 16
 ```
 
-Нет `apps/web`, worker и Redis. DLQ и retry — в API + Postgres (срезы CRM-1).
+Канон: [TZ.md](../TZ.md). Сдача: [handoff/](../handoff/).
 
 ## Принципы
 

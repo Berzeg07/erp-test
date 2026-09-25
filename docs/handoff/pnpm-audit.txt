@@ -1,0 +1,65 @@
+pnpm audit — 2026-09-25, cwd = repo root
+Command: pnpm audit
+Exit: 1 (findings present)
+
+11 vulnerabilities found
+Severity: 5 moderate | 3 high | 3 critical
+
+pnpm audit --prod
+9 vulnerabilities found
+Severity: 3 moderate | 3 high | 3 critical
+
+--- prod + transitive ---
+
+critical  fast-jwt  Incomplete fix for CVE-2023-48223 (JWT algorithm confusion, whitespace-prefixed RSA public key)
+          GHSA-mvf2-f6gm-w987
+          apps/server > @fastify/jwt@9.1.0 > fast-jwt@5.0.6
+          patched: >=6.2.0
+
+critical  fast-jwt  Cache confusion via cacheKeyBuilder collisions
+          GHSA-rp9m-7r4c-75qg
+          apps/server > @fastify/jwt@9.1.0 > fast-jwt@5.0.6
+          patched: >=6.2.0
+
+critical  fast-jwt  JWT auth bypass due to empty HMAC secret accepted by async key resolver
+          GHSA-gmvf-9v4p-v8jc
+          apps/server > @fastify/jwt@9.1.0 > fast-jwt@5.0.6
+          patched: >=6.2.4
+
+high      fast-jwt  accepts unknown crit header extensions (RFC 7515)
+          GHSA-hm7r-c7qw-ghp6
+          apps/server > @fastify/jwt@9.1.0 > fast-jwt@5.0.6
+
+high      @fastify/static  route guard bypass via path traversal
+          GHSA-83w8-p2f5-377r
+          apps/server > @fastify/swagger-ui@5.2.6 > @fastify/static@9.3.0
+          patched: >=10.1.1
+
+high      deepmerge-ts  stack exhaustion when merging recursive object graphs
+          GHSA-ggr8-5vv4-36mx
+          apps/server > @prisma/client > prisma > @prisma/config > deepmerge-ts@7.1.5
+          patched: >=8.0.0
+
+moderate  fast-jwt  ReDoS when using RegExp in allowed*
+          GHSA-cjw9-ghj4-fwxf
+          apps/server > @fastify/jwt@9.1.0 > fast-jwt@5.0.6
+          patched: >=6.2.1
+
+moderate  fast-jwt  Stateful RegExp causes non-deterministic allowed-claim validation
+          GHSA-3j8v-cgw4-2g6q
+          apps/server > @fastify/jwt@9.1.0 > fast-jwt@5.0.6
+          patched: >=6.2.1
+
+moderate  @fastify/static  authorization bypass via non-canonical URL paths
+          GHSA-8pvw-jcv7-9cmj
+          apps/server > @fastify/swagger-ui@5.2.6 > @fastify/static@9.3.0
+          patched: >=10.1.2
+
+--- extra in full audit (dev) ---
+
+moderate  vitest / @vitest/mocker  path traversal via redirect mock
+          GHSA-82fw-gwwq-j7x9
+          apps/admin, apps/server, packages/shared  vitest@3.2.7
+          patched: >=4.1.11
+
+Readable notes: docs/handoff/security-check.md

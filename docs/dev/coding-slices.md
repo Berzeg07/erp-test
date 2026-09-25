@@ -22,7 +22,9 @@
 
 ---
 
-## Сейчас (ближайший шаг)
+## Сейчас
+
+Очередь закрыта (DOCS-1 ✅). Дальше — запись немого ролика по [screencast.md](./screencast.md).
 
 | ID | Срез | Статус | Контракт |
 | -- | ---- | ------ | -------- |
@@ -41,7 +43,7 @@
 | **METR-1** | Метрики SYNTHETIC + kill-switch | ✅ | [TZ — метрики](../TZ.md#метрики-все-с-флагом-synthetic-true) |
 | **UI-1** | Немая демо-панель Vuetify под скринкаст | ✅ | [screencast.md](./screencast.md), [TZ — UI](../TZ.md#минимальный-ui-vuetify-appsadmin) |
 | **TEST-1** | Добить ≥18 обязательных тестов | ✅ | [TZ — тесты](../TZ.md#автотесты-минимум-18) |
-| **DOCS-1** | README, threat model, COMMERCIAL, AI_USAGE, скринкаст | ⬜ **текущий** | [TZ — сдача](../TZ.md#сдача) |
+| **DOCS-1** | README, threat model, COMMERCIAL, AI_USAGE, скринкаст | ✅ | [TZ — сдача](../TZ.md#сдача) |
 
 ---
 
@@ -280,9 +282,13 @@
 
 ### DOCS-1 — сдача
 
-README, OpenAPI уже с BOOT-0, threat model (черновик в TZ дополнить файлом `docs/THREAT-MODEL.md`), COMMERCIAL.md, AI_USAGE.md, часы и 3 компромисса. Скринкаст снять по [screencast.md](./screencast.md), без голоса.
+README, OpenAPI уже с BOOT-0, threat model (черновик в TZ дополнить файлом `docs/handoff/THREAT-MODEL.md`), COMMERCIAL.md, AI_USAGE.md, часы и 3 компромисса. Скринкаст снять по [screencast.md](./screencast.md), без голоса.
 
 **Что нет:** живая модель, второй фронт, Redis.
+
+**Статус:** ✅ 2026-09-25. Корневой README; пакет сдачи в [handoff/](../handoff/) (threat model, COMMERCIAL 6 ч, AI_USAGE, audit). Ролик — запись оператора по раскадровке, не код.
+
+Очередь срезов закрыта.
 
 ---
 

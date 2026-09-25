@@ -380,16 +380,18 @@ Kill-switch: ручной `POST` и авто из бюджета. Глушит L
 - `.env.example`, lockfile, Compose
 - OpenAPI + схема сущностей
 - fixture + expected outcomes
-- threat model
-- результаты build / lint / tests / security check (audit зависимостей)
+- threat model → [handoff/THREAT-MODEL.md](./handoff/THREAT-MODEL.md)
+- результаты build / lint / tests / security check (audit зависимостей) → [handoff/security-check.md](./handoff/security-check.md)
 - скринкаст 7–10 мин **без голоса** по [dev/screencast.md](./dev/screencast.md)
-- `COMMERCIAL.md`, `AI_USAGE.md`, часы, расходы, 3 компромисса
+- [COMMERCIAL.md](./handoff/COMMERCIAL.md), [AI_USAGE.md](./handoff/AI_USAGE.md), часы, расходы, 3 компромисса
 
 Компромиссы по умолчанию: нет живого LLM; нет `apps/web` и Redis; UI тонкий; human minutes — константы; канал только mock-email.
 
 ---
 
 ## Threat model (кратко)
+
+Полный файл сдачи: [handoff/THREAT-MODEL.md](./handoff/THREAT-MODEL.md). Audit зависимостей: [handoff/security-check.md](./handoff/security-check.md).
 
 | Угроза | Контрмера |
 | ------ | --------- |
