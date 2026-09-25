@@ -62,6 +62,7 @@ model Tenant {
   drafts          Draft[]
   draftVersions   DraftVersion[]
   approvals       Approval[]
+  outboxMessages  OutboxMessage[]
 }
 
 enum LeadCaseStatus {
@@ -186,6 +187,7 @@ model LeadCase {
   rawRecords       RawLeadRecord[]
   decisionRecord   DecisionRecord?
   draft            Draft?
+  outboxMessages   OutboxMessage[]
 
   @@unique([tenantId, personId, companyId])
   @@index([tenantId])
@@ -273,6 +275,7 @@ model DraftVersion {
   createdAt     DateTime @default(now())
 
   approval Approval?
+  outbox   OutboxMessage?
 
   @@unique([draftId, versionNumber])
   @@index([tenantId])
@@ -289,4 +292,24 @@ model Approval {
   createdAt        DateTime     @default(now())
 
   @@index([tenantId])
+}
+
+model OutboxMessage {
+  id             String       @id @default(uuid())
+  tenantId       String
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadCaseId     String
+  leadCase       LeadCase     @relation(fields: [leadCaseId], references: [id], onDelete: Cascade)
+  draftVersionId String       @unique
+  draftVersion   DraftVersion @relation(fields: [draftVersionId], references: [id], onDelete: Cascade)
+  channel        String
+  toEmail        String?
+  subject        String
+  body           String
+  status         String
+  sentAt         DateTime
+  createdAt      DateTime     @default(now())
+
+  @@index([tenantId])
+  @@index([leadCaseId])
 }

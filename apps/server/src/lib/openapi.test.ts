@@ -28,6 +28,8 @@ const documented: Array<{ method: string; path: string; doc: keyof typeof routeD
   { method: 'get', path: '/cases/{id}/drafts', doc: 'casesListDrafts' },
   { method: 'patch', path: '/drafts/{versionId}', doc: 'draftsPatch' },
   { method: 'post', path: '/drafts/{versionId}/approve', doc: 'draftsApprove' },
+  { method: 'post', path: '/drafts/{versionId}/send', doc: 'draftsSend' },
+  { method: 'get', path: '/outbox', doc: 'outboxList' },
 ]
 
 describe('OpenAPI operation docs', () => {
@@ -59,6 +61,8 @@ describe('OpenAPI operation docs', () => {
     expect(body.components?.schemas?.TenantBudget?.description).toContain('tokenSpent')
     expect(body.info?.description).toContain('## Draft')
     expect(body.components?.schemas?.DraftVersion?.description).toContain('versionId')
+    expect(body.info?.description).toContain('## Outbox')
+    expect(body.components?.schemas?.OutboxMessage?.description).toContain('MOCK_SENT')
 
     for (const item of documented) {
       const operation = body.paths?.[item.path]?.[item.method]

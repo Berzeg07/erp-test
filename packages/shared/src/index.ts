@@ -138,3 +138,11 @@ export {
   type DraftPatchBody,
   type DraftVersionPublic,
 } from './drafts.js'
+export {
+  OutboxListSchema,
+  OutboxSendResultSchema,
+  OutboxStatusSchema,
+  type OutboxList,
+  type OutboxSendResult,
+  type OutboxStatus,
+} from './outbox.js'

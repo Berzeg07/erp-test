@@ -35,8 +35,8 @@
 | **RULE-1** | Правила `rules-v1` + DecisionRecord | ✅ | [TZ — квалификация](../TZ.md#правила-квалификации-детерминированные-policy-rules-v1) |
 | **LLM-1** | Mock LLM + схема + бюджет токенов | ✅ | [TZ — LLM](../TZ.md#llm-adapter-p1) |
 | **DRAFT-1** | Draft + approval версии | ✅ | [TZ — конвейер п.8–9](../TZ.md#конвейер) |
-| **OUT-1** | Outbox mock-send идемпотентный | ⬜ **текущий** | тот же п.10 |
-| **REPLY-1** | Mock replies + задачи; payment/meeting события | ⬜ | [TZ — ответы](../TZ.md#mock-ответы-и-задачи) |
+| **OUT-1** | Outbox mock-send идемпотентный | ✅ | тот же п.10 |
+| **REPLY-1** | Mock replies + задачи; payment/meeting события | ⬜ **текущий** | [TZ — ответы](../TZ.md#mock-ответы-и-задачи) |
 | **CRM-1** | Upsert CRM, 429/5xx, DLQ, reprocess | ⬜ | [TZ — CRM](../TZ.md#mock-crm) |
 | **METR-1** | Метрики SYNTHETIC + kill-switch | ⬜ | [TZ — метрики](../TZ.md#метрики-все-с-флагом-synthetic-true) |
 | **UI-1** | Немая демо-панель Vuetify под скринкаст | ⬜ после METR-1 | [screencast.md](./screencast.md), [TZ — UI](../TZ.md#минимальный-ui-vuetify-appsadmin) |
@@ -197,6 +197,8 @@
 - Тест повторного mock-send.
 
 **Что нет:** SMTP, CRM (можно заглушить событие «для CRM» до CRM-1).
+
+**Статус:** ✅ 2026-09-25. `POST /drafts/:versionId/send` пишет `OutboxMessage` `MOCK_SENT` (канал `mock_email`, без сети). Unique `draftVersionId`: повтор — тот же `outboxId`, `idempotent=true`. Без approve → 409 `APPROVAL_REQUIRED`. После PATCH старая версия → `APPROVAL_STALE`. `BLOCKED` / не QUALIFY / kill-switch / `budget_exceeded` → 409. Уже отправленное повтор не режет. `GET /outbox` — список квартиры.
 
 ---
 

@@ -7,5 +7,6 @@ export const WEB_API_PROXY_PREFIXES = [
   '/mock-source',
   '/cases',
   '/drafts',
+  '/outbox',
   '/suppression',
 ] as const

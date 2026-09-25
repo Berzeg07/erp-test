@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { DraftListSchema, DraftPatchBodySchema, DraftVersionPublicSchema } from '@app/shared'
+import { DraftListSchema, DraftPatchBodySchema, DraftVersionPublicSchema, OutboxSendResultSchema } from '@app/shared'
 import { routeDocs, tenantHeaderSchema } from '../../lib/openapi.js'
 import { TENANT_ISOLATION, resolveTenant } from '../../lib/tenant.js'
 import {
@@ -9,6 +9,7 @@ import {
   listDrafts,
   patchDraftVersion,
 } from './draft.service.js'
+import { OutboxError, sendDraftVersion } from '../outbox/outbox.service.js'
 
 export async function draftRoutes(app: FastifyInstance) {
   app.register(async (scoped) => {
@@ -126,6 +127,37 @@ export async function draftRoutes(app: FastifyInstance) {
           return reply.code(404).send({ error: TENANT_ISOLATION })
         }
         return DraftVersionPublicSchema.parse(approved)
+      },
+    )
+
+    scoped.post<{ Params: { versionId: string } }>(
+      '/drafts/:versionId/send',
+      {
+        schema: {
+          tags: ['drafts'],
+          ...routeDocs.draftsSend,
+          security: [{ bearerAuth: [] }],
+          headers: tenantHeaderSchema,
+          params: {
+            type: 'object',
+            required: ['versionId'],
+            properties: { versionId: { type: 'string', format: 'uuid' } },
+          },
+        },
+      },
+      async (request, reply) => {
+        try {
+          const sent = await sendDraftVersion(request.tenant!, request.params.versionId)
+          if (!sent) {
+            return reply.code(404).send({ error: TENANT_ISOLATION })
+          }
+          return OutboxSendResultSchema.parse(sent)
+        } catch (error) {
+          if (error instanceof OutboxError) {
+            return reply.code(error.statusCode).send({ error: error.code })
+          }
+          throw error
+        }
       },
     )
   })

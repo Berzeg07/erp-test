@@ -22,7 +22,8 @@ export const openApiInfo = {
     '1. Импорт сырья (`POST /imports` или `POST /imports/from-mock-source`).',
     '2. Стоп-список (`POST /suppression/from-fixtures`) — по желанию.',
     '3. `POST /cases/resolve` — склейка, затем policy (`deliveryGuard`), rules-v1 (`status`, `score`, `DecisionRecord`) и mock-LLM (совет в `decision.llmOutput`).',
-    '4. Смотреть `GET /cases` / `GET /cases/{id}`.',
+    '4. Черновик `POST /cases/{id}/drafts` → approve → `POST /drafts/{versionId}/send` (outbox, без SMTP).',
+    '5. Смотреть `GET /cases` / `GET /cases/{id}` / `GET /outbox`.',
     '',
     '## Три разные оси на сырье',
     '',
@@ -150,9 +151,17 @@ export const openApiInfo = {
     '',
     'Письмо собирается **из evidence карточки**, не из LLM и не из `comment`. Канал `mock_email`, CTA `book_a_15min_demo`.',
     '',
-    '`POST /cases/{id}/drafts` → versionId. `POST /drafts/{versionId}/approve` — человек. `PATCH /drafts/{versionId}` `{ text }` — новая версия, старый approve не покрывает её. Send в этом срезе нет.',
+    '`POST /cases/{id}/drafts` → versionId. `POST /drafts/{versionId}/approve` — человек. `PATCH /drafts/{versionId}` `{ text }` — новая версия, старый approve не покрывает её.',
     '',
     'Ira: 200 и текст с именем/фирмой/CONSENT. Quiet Harbor: 409 `DELIVERY_BLOCKED`. Hobby: 409 `NOT_QUALIFIED`.',
+    '',
+    '## Outbox (mock-send, без SMTP)',
+    '',
+    '`POST /drafts/{versionId}/send` пишет строку `MOCK_SENT` в outbox. Сети нет. Повтор того же versionId возвращает тот же `outboxId` (`idempotent=true`), второе касание не создаётся.',
+    '',
+    'Перед записью: kill-switch / бюджет → 409 `KILL_SWITCH_ACTIVE` / `BUDGET_EXCEEDED`; `BLOCKED` → `DELIVERY_BLOCKED`; не QUALIFY → `NOT_QUALIFIED`; не последняя версия → `APPROVAL_STALE`; нет approve → `APPROVAL_REQUIRED`.',
+    '',
+    'Уже отправленную версию повтор не режет, даже если guard потом стал BLOCKED. Список: `GET /outbox` этой квартиры.',
   ].join('\n'),
 }
 
@@ -164,7 +173,8 @@ export const openApiTags = [
   { name: 'cases', description: 'Дедуп: Person, Company, карточка LeadCase. На карточке processingBasis уже «худшее» из raw; guard и status — отдельные поля.' },
   { name: 'policy', description: 'Можно ли действовать. Три оси: processingBasis, optOut/suppression, injection → deliveryGuard CLEAR|BLOCKED.' },
   { name: 'rules', description: 'Квалификация rules-v1: QUALIFY / REJECT / MANUAL_REVIEW + DecisionRecord. Следом mock-LLM пишет llmOutput.' },
-  { name: 'drafts', description: 'Черновик mock-email только из evidence. Письмо только QUALIFY + CLEAR. Approve привязан к versionId. Send — срез OUT-1.' },
+  { name: 'drafts', description: 'Черновик mock-email только из evidence. Письмо только QUALIFY + CLEAR. Approve привязан к versionId. Send — POST /drafts/{versionId}/send.' },
+  { name: 'outbox', description: 'Локальный mock-outbox. SMTP нет. GET /outbox — что «отправили» в этой квартире.' },
 ]
 
 export const tenantHeaderSchema = {
@@ -378,7 +388,7 @@ export const routeDocs = {
       '',
       'BLOCKED (Quiet Harbor, Inject, Fog) → 409 DELIVERY_BLOCKED. REJECT/review при CLEAR → 409 NOT_QUALIFIED. Чужой id → 404 TENANT_ISOLATION.',
       '',
-      'Каждый POST создаёт новую иммутабельную версию (versionId). Approval на старой версии к новой не переносится. Send — POST /drafts/{versionId}/send, срез OUT-1.',
+      'Каждый POST создаёт новую иммутабельную версию (versionId). Approval на старой версии к новой не переносится. Send — POST /drafts/{versionId}/send.',
     ].join('\n'),
   },
   casesListDrafts: {
@@ -389,7 +399,7 @@ export const routeDocs = {
   draftsPatch: {
     summary: 'Править текст — новая версия, старый approval не действует',
     description: [
-      'Тело: { "text": "…" }. Создаёт новую DraftVersion с тем же subject/evidence/CTA. Старая версия не меняется. Её approval остаётся на старом versionId и для новой версии мёртв (APPROVAL_STALE на send — OUT-1).',
+      'Тело: { "text": "…" }. Создаёт новую DraftVersion с тем же subject/evidence/CTA. Старая версия не меняется. Её approval остаётся на старом versionId и для новой версии мёртв (send старой → 409 APPROVAL_STALE).',
       '',
       'Чужой versionId / чужой tenant → 404 TENANT_ISOLATION. Пустой text → 400 VALIDATION_ERROR.',
     ].join('\n'),
@@ -399,7 +409,27 @@ export const routeDocs = {
     description: [
       'Body не нужен. Approval привязан к этому versionId, не к карточке целиком. Повтор на той же версии идемпотентен.',
       '',
-      'После PATCH нужен новый approve на новый versionId. Чужой id → 404. Send без approve — 409 APPROVAL_REQUIRED (OUT-1).',
+      'После PATCH нужен новый approve на новый versionId. Чужой id → 404. Send без approve — 409 APPROVAL_REQUIRED.',
+    ].join('\n'),
+  },
+  draftsSend: {
+    summary: 'Mock-send утверждённой версии в outbox',
+    description: [
+      'JWT + x-tenant-id. Body не нужен. SMTP/CRM нет: пишет OutboxMessage status=MOCK_SENT, канал mock_email, toEmail с карточки.',
+      '',
+      'Повтор того же versionId: 200, тот же outboxId, idempotent=true, sentAt не двигается. Уже записанное не режется kill-switch и BLOCKED.',
+      '',
+      'Иначе 409: APPROVAL_REQUIRED (нет галочки), APPROVAL_STALE (это не последняя версия после PATCH), DELIVERY_BLOCKED, NOT_QUALIFIED, KILL_SWITCH_ACTIVE, BUDGET_EXCEEDED (killSwitchReason=budget_exceeded). Чужой versionId → 404 TENANT_ISOLATION.',
+      '',
+      'Список: GET /outbox.',
+    ].join('\n'),
+  },
+  outboxList: {
+    summary: 'Что mock-отправили в этой квартире',
+    description: [
+      'JWT + x-tenant-id. Чтение OutboxMessage текущей квартиры: outboxId, draftVersionId, MOCK_SENT, канал mock_email, toEmail, sentAt. Поля idempotent нет — оно только на POST send.',
+      '',
+      'Пустой messages[] = ещё не слали (или слали без approve — тогда тоже пусто). Соседний tenant своих строк не видит. SMTP нет.',
     ].join('\n'),
   },
 } as const satisfies Record<string, RouteDoc>
@@ -523,11 +553,23 @@ export const openApiSchemas = {
     type: 'object' as const,
     description: [
       'Иммутабельная версия черновика. Текст из evidence (имя, email, фирма, processingBasis, sourcePurpose), канал mock_email, CTA book_a_15min_demo.',
-      'Не из comment и не из совета LLM. Approval висит на versionId. PATCH создаёт новую версию.',
+      'Не из comment и не из совета LLM. Approval висит на versionId. PATCH создаёт новую версию. Send этой версии — POST /drafts/{versionId}/send.',
     ].join(' '),
     properties: {
       versionId: { type: 'string' as const, format: 'uuid' },
       approved: { type: 'boolean' as const },
+    },
+  },
+  OutboxMessage: {
+    type: 'object' as const,
+    description: [
+      'Локальный mock-send. SMTP нет. status всегда MOCK_SENT, channel всегда mock_email.',
+      'Один draftVersionId — одна строка (идемпотентный ключ). Повтор send возвращает тот же outboxId.',
+    ].join(' '),
+    properties: {
+      outboxId: { type: 'string' as const, format: 'uuid' },
+      status: { type: 'string' as const, enum: ['MOCK_SENT'] },
+      idempotent: { type: 'boolean' as const },
     },
   },
 }

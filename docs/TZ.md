@@ -292,7 +292,8 @@ Kill-switch: ручной `POST` и авто из бюджета. Глушит L
 - `POST /cases/:id/qualify` (правила, затем mock-LLM)
 - `POST /cases/:id/drafts`, `PATCH` текст (новая version, revoke approval)
 - `POST /drafts/:versionId/approve`
-- `POST /drafts/:versionId/send` — 409 без approval / при BLOCKED / kill-switch
+- `POST /drafts/:versionId/send` — 409 без approval / при BLOCKED / kill-switch / stale; повтор — тот же outbox id
+- `GET /outbox` — mock-отправки текущей квартиры
 - `POST /replies`
 - `POST /events/meetings`, `POST /events/payments`
 - `GET /crm/{companies,contacts,deals,tasks}`
